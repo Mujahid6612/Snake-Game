@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
-import mobileAds from "react-native-google-mobile-ads";
+import mobileAds, { MobileAds } from "react-native-google-mobile-ads";
 // import { useAppOpenAd } from '@/hooks/useAppOpenAd';
 
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -63,8 +63,20 @@ export default function RootLayout() {
 
   // Initialize the Google Mobile Ads SDK once on app start. Without this,
   // banners/interstitials load unreliably or not at all.
+  //
+  // Test devices see safe "Test Ad" placeholders even when IS_TESTING is false
+  // and real ad unit IDs are used — so you can verify real units without risking
+  // an account suspension for clicking your own live ads.
+  // To get the ID: run the app, load an ad, and copy the hex string the SDK
+  // prints in logcat ("setTestDeviceIds(Arrays.asList("XXXX"))"). Add it below.
   useEffect(() => {
-    mobileAds().initialize();
+    const TEST_DEVICE_IDS: string[] = [
+      // "33BE2250B43518CCDA7DE426D04EE231", // <- replace with your device ID from logcat
+    ];
+
+    MobileAds()
+      .setRequestConfiguration({ testDeviceIdentifiers: TEST_DEVICE_IDS })
+      .then(() => mobileAds().initialize());
   }, []);
 
   if (!loaded) {
