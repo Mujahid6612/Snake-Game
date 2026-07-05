@@ -43,6 +43,9 @@ export const theme = {
   gray600: palette.gray666,
   border: palette.gray333,
 
+  // Play-area wall (brown)
+  wall: "#8B5A2B",
+
   // Form controls
   switchTrackOff: palette.switchTrackOff,
   switchThumbOff: palette.switchThumbOff,

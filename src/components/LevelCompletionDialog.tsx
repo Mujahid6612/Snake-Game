@@ -73,21 +73,27 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
           </View>
 
           <View style={styles.buttonContainer}>
+            {onNextLevel && (
+              <TouchableOpacity
+                style={[styles.button, styles.nextButton]}
+                onPress={handleNextLevel}
+              >
+                <Text style={styles.buttonTextPrimary}>Next Level</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color={theme.background}
+                />
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity
               style={[styles.button, styles.continueButton]}
               onPress={handleContinue}
             >
               <Text style={styles.buttonText}>Keep Playing</Text>
-              <Ionicons name="play" size={20} color={theme.white} />
+              <Ionicons name="play" size={20} color={theme.primary} />
             </TouchableOpacity>
-            {/* 
-            <TouchableOpacity 
-              style={[styles.button, styles.nextButton]} 
-              onPress={handleNextLevel}
-            >
-              <Text style={styles.buttonText}>Go to Next Level</Text>
-              <Ionicons name="arrow-forward" size={20} color={theme.white} />
-            </TouchableOpacity> */}
           </View>
         </View>
       </View>
@@ -160,15 +166,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   continueButton: {
-    backgroundColor: theme.primary,
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
   },
   nextButton: {
-    backgroundColor: theme.primaryDark,
+    backgroundColor: theme.primary,
   },
   buttonText: {
     color: theme.white,
     fontSize: 16,
     fontWeight: "600",
+  },
+  buttonTextPrimary: {
+    color: theme.background,
+    fontSize: 16,
+    fontWeight: "800",
   },
 });
 

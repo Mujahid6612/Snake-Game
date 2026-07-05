@@ -1,28 +1,33 @@
 import { theme } from "@/constants/theme";
-import React, { useState, useEffect } from "react";
+import { useLevelSounds } from "@/hooks/useLevelSounds";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { AudioPlayer } from "expo-audio";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  Text,
-  TouchableOpacity,
   Animated,
   Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useLevelSounds } from "@/hooks/useLevelSounds";
-import type { AudioPlayer } from "expo-audio";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS, DIFFICULTY_SPEEDS } from "../app/(tabs)/settings";
-import LevelProgressBar from "../components/LevelProgressBar";
+import { DIFFICULTY_SPEEDS, STORAGE_KEYS } from "../app/(tabs)/settings";
+import GameOverModal from "../components/GameOverModal";
 import LevelCompletionDialog from "../components/LevelCompletionDialog";
-import LevelInfoModal from "../components/LevelInfoModal";
+import LevelProgressBar from "../components/LevelProgressBar";
+import LevelTutorial from "../components/LevelTutorial";
 // import { useRewardedAd } from "@/hooks/useRewardedAd";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CELL_SIZE = Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / 25); // Responsive cell size
 const GRID_SIZE = 20;
+// First-level tutorial: shown once, then remembered. Set to true to always
+// show it (handy while testing).
+const TUTORIAL_KEY = "@Level1_Tutorial_Done";
+const ALWAYS_SHOW_TUTORIAL = false;
 const INITIAL_SNAKE = [{ x: 5, y: 5 }];
 const DIRECTIONS = {
   UP: { x: 0, y: -1 },
@@ -30,7 +35,10 @@ const DIRECTIONS = {
   LEFT: { x: -1, y: 0 },
   RIGHT: { x: 1, y: 0 },
 };
-const GAME_AREA_SCALE = Math.min(SCREEN_WIDTH / (GRID_SIZE * CELL_SIZE), SCREEN_HEIGHT / (GRID_SIZE * CELL_SIZE * 1.4));
+const GAME_AREA_SCALE = Math.min(
+  SCREEN_WIDTH / (GRID_SIZE * CELL_SIZE),
+  SCREEN_HEIGHT / (GRID_SIZE * CELL_SIZE * 1.4),
+);
 
 // Update GAME_ELEMENTS with power names
 const GAME_ELEMENTS = {
@@ -43,7 +51,18 @@ const GAME_ELEMENTS = {
   WALL_PASS: { emoji: "🌈", name: "Wall Pass", size: 18 },
 };
 
+type MciName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+
+// Vector icons for power-ups (consistent across Android versions).
+const POWER_ICONS: Record<string, MciName> = {
+  SPEED_UP: "lightning-bolt",
+  SPEED_DOWN: "snail",
+  SCORE_BOOST: "star-four-points",
+  WALL_PASS: "wall",
+};
+
 const SnakeGame = () => {
+  const router = useRouter();
   const [snake, setSnake] = useState(INITIAL_SNAKE);
   const [direction, setDirection] = useState(DIRECTIONS.RIGHT);
   const [food, setFood] = useState({ x: 10, y: 10 });
@@ -57,9 +76,9 @@ const SnakeGame = () => {
   }>(null);
   const [gameSpeed, setGameSpeed] = useState(240);
   const [canPassWalls, setCanPassWalls] = useState(false);
-  const [powerUpTimeout, setPowerUpTimeout] = useState<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const [powerUpTimeout, setPowerUpTimeout] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [activePowers, setActivePowers] = useState<
     {
       type: string;
@@ -80,12 +99,12 @@ const SnakeGame = () => {
   const [levelBestScore, setLevelBestScore] = useState(0);
   const [hasShownLevelComplete, setHasShownLevelComplete] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [showLevelInfo, setShowLevelInfo] = useState(true);
   // const { showAd, isAdLoaded, hasRewarded } = useRewardedAd();
   const [lastScore, setLastScore] = useState(0);
   const [adCooldown, setAdCooldown] = useState(0);
   const [baseSpeed, setBaseSpeed] = useState(240); // Track original speed separately
-
+  const [boostText, setBoostText] = useState("+5");
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const loadSettings = async () => {
     try {
@@ -95,7 +114,8 @@ const SnakeGame = () => {
       ]);
 
       if (difficultyValue) {
-        const speed = DIFFICULTY_SPEEDS[difficultyValue as keyof typeof DIFFICULTY_SPEEDS];
+        const speed =
+          DIFFICULTY_SPEEDS[difficultyValue as keyof typeof DIFFICULTY_SPEEDS];
         setBaseSpeed(speed);
         setGameSpeed(speed);
       }
@@ -154,7 +174,7 @@ const SnakeGame = () => {
               ...power,
               timeLeft: power.timeLeft - 1,
             }))
-            .filter((power) => power.timeLeft > 0)
+            .filter((power) => power.timeLeft > 0),
         );
       }, 1000);
 
@@ -190,10 +210,29 @@ const SnakeGame = () => {
   }, [score, hasShownLevelComplete]);
 
   useEffect(() => {
-    setShowLevelInfo(true);
     setCountdown(null);
     setIsPlaying(false);
   }, []);
+
+  // Show the first-level tutorial until it's been completed or skipped once.
+  useEffect(() => {
+    if (ALWAYS_SHOW_TUTORIAL) {
+      setShowTutorial(true);
+      return;
+    }
+    AsyncStorage.getItem(TUTORIAL_KEY).then((done) => {
+      if (done !== "true") setShowTutorial(true);
+    });
+  }, []);
+
+  const finishTutorial = async () => {
+    setShowTutorial(false);
+    try {
+      await AsyncStorage.setItem(TUTORIAL_KEY, "true");
+    } catch (error) {
+      console.error("Error saving tutorial state:", error);
+    }
+  };
 
   const moveSnake = async () => {
     const newSnake = [...snake];
@@ -282,17 +321,17 @@ const SnakeGame = () => {
     setCanPassWalls(false);
     setPowerUp(null);
     setActivePowers([]);
-    
+
     // Clear any existing timeouts
     if (powerUpTimeout) {
       clearTimeout(powerUpTimeout);
       setPowerUpTimeout(null);
     }
-    
+
     setHasShownLevelComplete(false);
     setIsGameOver(false);
     setHasGameStarted(false);
-    
+
     // Set countdown last to ensure UI updates properly
     setTimeout(() => {
       setCountdown(3);
@@ -328,6 +367,26 @@ const SnakeGame = () => {
     ]).start(() => setShowScoreBoost(false));
   };
 
+  // Show a floating label when a power-up is collected (reuses the +5 UI).
+  const showPowerToast = (text: string) => {
+    setBoostText(text);
+    animateScore();
+  };
+
+  // Single source of truth for power effects: derive wall-pass and speed
+  // directly from the active power-ups so they end exactly when their
+  // timers run out (fixes powers lingering after they expire).
+  useEffect(() => {
+    setCanPassWalls(activePowers.some((p) => p.type === "WALL_PASS"));
+    if (activePowers.some((p) => p.type === "SPEED_UP")) {
+      setGameSpeed(Math.round(baseSpeed * 0.5));
+    } else if (activePowers.some((p) => p.type === "SPEED_DOWN")) {
+      setGameSpeed(Math.round(baseSpeed * 1.6));
+    } else {
+      setGameSpeed(baseSpeed);
+    }
+  }, [activePowers, baseSpeed]);
+
   // Modified handlePowerUp function
   const handlePowerUp = async (type: string) => {
     // Clear any existing timeout first
@@ -346,34 +405,40 @@ const SnakeGame = () => {
 
     // For SCORE_BOOST, we don't need to remove existing powers
     if (type !== "SCORE_BOOST") {
-      setActivePowers(prev => prev.filter(p => p.type !== type));
+      setActivePowers((prev) => prev.filter((p) => p.type !== type));
     }
 
     switch (type) {
       case "SPEED_UP":
         setGameSpeed(Math.round(baseSpeed * 0.5)); // 50% faster
-        setActivePowers(prev => {
-          const filtered = prev.filter(p => p.type !== "SPEED_DOWN");
+        setActivePowers((prev) => {
+          const filtered = prev.filter((p) => p.type !== "SPEED_DOWN");
           return [...filtered, { type, timeLeft: 15, startTime: Date.now() }];
         });
+        showPowerToast("Speed Boost");
         await playPowerUpSound();
         break;
       case "SPEED_DOWN":
         setGameSpeed(Math.round(baseSpeed * 1.6)); // 60% slower
-        setActivePowers(prev => {
-          const filtered = prev.filter(p => p.type !== "SPEED_UP");
+        setActivePowers((prev) => {
+          const filtered = prev.filter((p) => p.type !== "SPEED_UP");
           return [...filtered, { type, timeLeft: 15, startTime: Date.now() }];
         });
+        showPowerToast("Slow Down");
         await playPowerUpSound();
         break;
       case "SCORE_BOOST":
-        setScore(prev => prev + 5);
-        animateScore();
+        setScore((prev) => prev + 5);
+        showPowerToast("+5");
         await playPowerUpSound();
         break;
       case "WALL_PASS":
         setCanPassWalls(true);
-        setActivePowers(prev => [...prev, { type, timeLeft: 15, startTime: Date.now() }]);
+        setActivePowers((prev) => [
+          ...prev,
+          { type, timeLeft: 15, startTime: Date.now() },
+        ]);
+        showPowerToast("Wall Pass");
         await playPowerUpSound();
         break;
     }
@@ -381,15 +446,22 @@ const SnakeGame = () => {
     // Set timeout for power-up expiration (except SCORE_BOOST which is instant)
     if (type !== "SCORE_BOOST") {
       const timeoutId = setTimeout(() => {
-        setActivePowers(prev => {
-          const updatedPowers = prev.filter(p => p.type !== type);
+        setActivePowers((prev) => {
+          const updatedPowers = prev.filter((p) => p.type !== type);
           // If no wall pass powers are active, disable wall passing
-          if (type === "WALL_PASS" && !updatedPowers.some(p => p.type === "WALL_PASS")) {
+          if (
+            type === "WALL_PASS" &&
+            !updatedPowers.some((p) => p.type === "WALL_PASS")
+          ) {
             setCanPassWalls(false);
           }
           // If no speed powers are active, reset speed
-          if ((type === "SPEED_UP" || type === "SPEED_DOWN") && 
-              !updatedPowers.some(p => p.type === "SPEED_UP" || p.type === "SPEED_DOWN")) {
+          if (
+            (type === "SPEED_UP" || type === "SPEED_DOWN") &&
+            !updatedPowers.some(
+              (p) => p.type === "SPEED_UP" || p.type === "SPEED_DOWN",
+            )
+          ) {
             setGameSpeed(baseSpeed);
           }
           return updatedPowers;
@@ -403,11 +475,11 @@ const SnakeGame = () => {
   useEffect(() => {
     if (isPaused) {
       // Store remaining time for each power when pausing
-      setActivePowers(prev =>
-        prev.map(power => ({
+      setActivePowers((prev) =>
+        prev.map((power) => ({
           ...power,
           pausedAt: Date.now(),
-        }))
+        })),
       );
 
       // Clear existing timeout
@@ -417,49 +489,61 @@ const SnakeGame = () => {
       }
     } else if (!isPaused && isPlaying) {
       // Resume powers with adjusted time
-      setActivePowers(prev =>
-        prev.map(power => {
-          if (power.pausedAt) {
-            const pauseDuration = Date.now() - power.pausedAt;
-            const adjustedTimeLeft = power.timeLeft + Math.floor(pauseDuration / 1000);
-            
-            // If power has expired during pause, remove it
-            if (adjustedTimeLeft <= 0) {
-              // Reset effects for expired powers
-              if (power.type === "WALL_PASS") {
-                setCanPassWalls(false);
-              } else if (power.type === "SPEED_UP" || power.type === "SPEED_DOWN") {
-                setGameSpeed(baseSpeed);
+      setActivePowers(
+        (prev) =>
+          prev
+            .map((power) => {
+              if (power.pausedAt) {
+                const pauseDuration = Date.now() - power.pausedAt;
+                const adjustedTimeLeft =
+                  power.timeLeft + Math.floor(pauseDuration / 1000);
+
+                // If power has expired during pause, remove it
+                if (adjustedTimeLeft <= 0) {
+                  // Reset effects for expired powers
+                  if (power.type === "WALL_PASS") {
+                    setCanPassWalls(false);
+                  } else if (
+                    power.type === "SPEED_UP" ||
+                    power.type === "SPEED_DOWN"
+                  ) {
+                    setGameSpeed(baseSpeed);
+                  }
+                  return null;
+                }
+
+                return {
+                  ...power,
+                  timeLeft: adjustedTimeLeft,
+                  pausedAt: undefined,
+                };
               }
-              return null;
-            }
-            
-            return {
-              ...power,
-              timeLeft: adjustedTimeLeft,
-              pausedAt: undefined,
-            };
-          }
-          return power;
-        }).filter(Boolean) as typeof activePowers
+              return power;
+            })
+            .filter(Boolean) as typeof activePowers,
       );
 
       // Recreate timeouts for remaining active powers
-      const remainingPowers = activePowers.filter(p => p.timeLeft > 0);
+      const remainingPowers = activePowers.filter((p) => p.timeLeft > 0);
       if (remainingPowers.length > 0) {
-        const shortestTimeLeft = Math.min(...remainingPowers.map(p => p.timeLeft));
+        const shortestTimeLeft = Math.min(
+          ...remainingPowers.map((p) => p.timeLeft),
+        );
         const timeoutId = setTimeout(() => {
-          setActivePowers(prev => {
-            const expiredPowers = prev.filter(p => p.timeLeft <= 0);
+          setActivePowers((prev) => {
+            const expiredPowers = prev.filter((p) => p.timeLeft <= 0);
             // Reset effects for expired powers
-            expiredPowers.forEach(power => {
+            expiredPowers.forEach((power) => {
               if (power.type === "WALL_PASS") {
                 setCanPassWalls(false);
-              } else if (power.type === "SPEED_UP" || power.type === "SPEED_DOWN") {
+              } else if (
+                power.type === "SPEED_UP" ||
+                power.type === "SPEED_DOWN"
+              ) {
                 setGameSpeed(baseSpeed);
               }
             });
-            return prev.filter(p => p.timeLeft > 0);
+            return prev.filter((p) => p.timeLeft > 0);
           });
         }, shortestTimeLeft * 1000);
         setPowerUpTimeout(timeoutId);
@@ -502,7 +586,7 @@ const SnakeGame = () => {
   const loadBestScore = async () => {
     try {
       const bestScore = await AsyncStorage.getItem(
-        `@Level_${currentLevel}_BestScore`
+        `@Level_${currentLevel}_BestScore`,
       );
       if (bestScore) {
         setLevelBestScore(parseInt(bestScore));
@@ -521,32 +605,37 @@ const SnakeGame = () => {
     setIsPlaying(true);
   };
 
+  const goToNextLevel = () => {
+    setShowLevelComplete(false);
+    router.replace(`/game-levels?level=${currentLevel + 1}`);
+  };
+
   const continueGame = async () => {
-      // Keep the previous score
-      const previousScore = lastScore;
+    // Keep the previous score
+    const previousScore = lastScore;
 
-      // Reset game state
-      setSnake(INITIAL_SNAKE);
-      setDirection(DIRECTIONS.RIGHT);
-      setFood({ x: 10, y: 10 });
-      setIsGameOver(false);
-      setIsPaused(false);
-      setGameSpeed(240);
-      setCanPassWalls(false);
-      setPowerUp(null);
-      setActivePowers([]);
+    // Reset game state
+    setSnake(INITIAL_SNAKE);
+    setDirection(DIRECTIONS.RIGHT);
+    setFood({ x: 10, y: 10 });
+    setIsGameOver(false);
+    setIsPaused(false);
+    setGameSpeed(240);
+    setCanPassWalls(false);
+    setPowerUp(null);
+    setActivePowers([]);
 
-      // Restore the previous score
-      setScore(previousScore);
+    // Restore the previous score
+    setScore(previousScore);
 
-      // Start countdown to resume game
-      setCountdown(3);
+    // Start countdown to resume game
+    setCountdown(3);
 
-      // Reset game started flag to ensure countdown works
-      setHasGameStarted(false);
+    // Reset game started flag to ensure countdown works
+    setHasGameStarted(false);
 
-      // Start ad cooldown
-      setAdCooldown(30);
+    // Start ad cooldown
+    setAdCooldown(30);
     // try {
     //   if (!isAdLoaded) {
     //     return;
@@ -600,190 +689,198 @@ const SnakeGame = () => {
     }
   }, [adCooldown]);
 
-  const handleStartGame = () => {
-    setShowLevelInfo(false);
-    if (!hasGameStarted) {
-      setCountdown(3);
-    }
-  };
-
   return (
-    <TouchableWithoutFeedback onPress={() => resumeGame()}>
-      <View style={styles.container}>
-        {/* Add LevelInfoModal */}
-        <LevelInfoModal
-          visible={showLevelInfo}
-          level={currentLevel}
-          onStart={handleStartGame}
-          onClose={() => {
-            handleStartGame();
-            setShowLevelInfo(false);
-          }}
-        />
+    <View style={styles.container}>
+      {/* Top bar: back · title · play/pause */}
+      <View style={styles.topBar}>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => router.back()}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chevron-back" size={24} color={theme.white} />
+        </TouchableOpacity>
 
-        {/* Game Header */}
-        <View style={styles.header}>
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreTitle}>Score</Text>
-            <Text style={styles.scoreValue}>{score}</Text>
-          </View>
+        <Text style={styles.levelTitle}>Level {currentLevel}</Text>
 
-          {/* Power ups counter in header */}
-          <View style={styles.headerPowersContainer}>
-            {activePowers.map((power, index) => (
-              <View key={`${power.type}-${index}`} style={styles.headerPower}>
-                <Text style={styles.powerEmoji}>
-                  {(GAME_ELEMENTS[power.type as keyof typeof GAME_ELEMENTS] as any).emoji}
-                </Text>
-                <Text style={styles.powerTimer}>{power.timeLeft}s</Text>
-              </View>
-            ))}
-          </View>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={resumeGame}
+          disabled={isGameOver}
+          activeOpacity={0.8}
+        >
+          <Ionicons
+            name={isPlaying ? "pause" : "play"}
+            size={22}
+            color={isGameOver ? theme.textMuted : theme.primary}
+          />
+        </TouchableOpacity>
+      </View>
 
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreTitle}>Best</Text>
-            <Text style={styles.scoreValue}>{highScore}</Text>
-          </View>
+      {/* Stats: score · active power-ups · best */}
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Score</Text>
+          <Text style={styles.statValue}>{score}</Text>
         </View>
 
-        {/* Add Level Progress Bar below header */}
-        <LevelProgressBar
-          currentLevel={currentLevel}
-          currentScore={score}
-          pointsToNextLevel={POINTS_TO_NEXT_LEVEL}
-        />
+        <View style={styles.headerPowersContainer}>
+          {activePowers.map((power, index) => (
+            <View key={`${power.type}-${index}`} style={styles.headerPower}>
+              <MaterialCommunityIcons
+                name={POWER_ICONS[power.type]}
+                size={15}
+                color={theme.primary}
+              />
+              <Text style={styles.powerTimer}>{power.timeLeft}s</Text>
+            </View>
+          ))}
+        </View>
 
-        {/* Game Area */}
-        <View style={styles.gameContainer}>
-          <PanGestureHandler onHandlerStateChange={handleGesture}>
-            <View style={styles.gameArea}>
-              {snake.map((segment, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.snake,
-                    index === 0 ? styles.snakeHead : styles.snakeBody,
-                    { left: segment.x * CELL_SIZE, top: segment.y * CELL_SIZE },
-                  ]}
-                >
-                  <Text style={styles.emoji}>
-                    {index === 0
-                      ? GAME_ELEMENTS.SNAKE_HEAD
-                      : GAME_ELEMENTS.SNAKE_BODY}
-                  </Text>
-                </View>
-              ))}
-              {powerUp && (
-                <View
-                  style={[
-                    styles.powerUp,
-                    {
-                      left: powerUp.position.x * CELL_SIZE,
-                      top: powerUp.position.y * CELL_SIZE,
-                    },
-                  ]}
-                >
-                  <Text style={styles.powerEmoji}>
-                    {
-                      (
-                        GAME_ELEMENTS[
-                          powerUp.type as keyof typeof GAME_ELEMENTS
-                        ] as any
-                      ).emoji
-                    }
-                  </Text>
-                </View>
-              )}
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Best</Text>
+          <Text style={styles.statValue}>{highScore}</Text>
+        </View>
+      </View>
+
+      {/* Add Level Progress Bar below header */}
+      <LevelProgressBar
+        currentLevel={currentLevel}
+        currentScore={score}
+        pointsToNextLevel={POINTS_TO_NEXT_LEVEL}
+      />
+
+      {/* Game Area */}
+      <View style={styles.gameContainer}>
+        <PanGestureHandler onHandlerStateChange={handleGesture}>
+          <View
+            style={[styles.gameArea, canPassWalls && styles.gameAreaNoWall]}
+          >
+            {snake.map((segment, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.snakeSegment,
+                  index === 0 ? styles.snakeHead : styles.snakeBody,
+                  { left: segment.x * CELL_SIZE, top: segment.y * CELL_SIZE },
+                ]}
+              />
+            ))}
+            {powerUp && (
               <View
                 style={[
-                  styles.food,
-                  { left: food.x * CELL_SIZE, top: food.y * CELL_SIZE },
+                  styles.powerUp,
+                  {
+                    left: powerUp.position.x * CELL_SIZE,
+                    top: powerUp.position.y * CELL_SIZE,
+                  },
                 ]}
               >
-                <Text style={styles.emoji}>{GAME_ELEMENTS.FOOD}</Text>
+                <MaterialCommunityIcons
+                  name={POWER_ICONS[powerUp.type]}
+                  size={CELL_SIZE}
+                  color={theme.accent}
+                />
               </View>
+            )}
+            <View
+              style={[
+                styles.food,
+                { left: food.x * CELL_SIZE, top: food.y * CELL_SIZE },
+              ]}
+            >
+              <Text style={styles.emoji}>{GAME_ELEMENTS.FOOD}</Text>
             </View>
-          </PanGestureHandler>
-        </View>
-
-        {/* Game Controls */}
-        <View style={styles.controls}>
-          <Text style={styles.controlsText}>Swipe to control the snake</Text>
-          {!isPlaying && !countdown && (
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.gameButton} onPress={restartGame}>
-                <Ionicons name="refresh" size={24} color={theme.white} />
-                <Text style={styles.buttonText}>Restart</Text>
-              </TouchableOpacity>
-
-              {isGameOver && (
-                <TouchableOpacity
-                  style={[
-                    styles.gameButton,
-                    // (!isAdLoaded || adCooldown > 0) && { opacity: 0.5 },
-                  ]}
-                  onPress={continueGame}
-                  // disabled={!isAdLoaded || adCooldown > 0}
-                >
-                  <Ionicons name="play" size={24} color={theme.white} />
-                  <Text style={styles.buttonText}>
-                    Continue ({lastScore})
-                    {/* {adCooldown > 0 && ` (${adCooldown}s)`} */}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-        </View>
-
-        <LevelCompletionDialog
-          visible={showLevelComplete}
-          level={currentLevel}
-          score={score}
-          onContinue={handleContinueGame}
-          onClose={() => setShowLevelComplete(false)}
-
-        />
-
-        {/* Add pause overlay */}
-        {isPaused && (
-          <View style={styles.pauseOverlay}>
-            <Text style={[styles.pausedText, { fontSize: SCREEN_WIDTH * 0.12 }]}>
-              PAUSED
-            </Text>
           </View>
-        )}
-
-        {/* Add countdown overlay */}
-        {countdown !== null && (
-          <View style={styles.countdownOverlay}>
-            <Text style={styles.countdownText}>{countdown || 'GO!'}</Text>
-          </View>
-        )}
-
-        {/* Add Score Boost Overlay */}
-        {showScoreBoost && (
-          <Animated.View
-            style={[
-              styles.scoreBoostContainer,
-              {
-                opacity: scoreAnimation,
-                transform: [
-                  {
-                    translateY: scoreAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, -50],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <Text style={styles.scoreBoostText}>+5</Text>
-          </Animated.View>
-        )}
+        </PanGestureHandler>
       </View>
-    </TouchableWithoutFeedback>
+
+      {/* Game Controls */}
+      <View style={styles.controls}>
+        <Text style={styles.controlsText}>Swipe to control the snake</Text>
+      </View>
+
+      <LevelCompletionDialog
+        visible={showLevelComplete}
+        level={currentLevel}
+        score={score}
+        onContinue={handleContinueGame}
+        onClose={() => setShowLevelComplete(false)}
+        onNextLevel={goToNextLevel}
+      />
+
+      <GameOverModal
+        visible={isGameOver}
+        score={score}
+        onRestart={restartGame}
+        onContinue={continueGame}
+        onHome={() => router.back()}
+      />
+
+      {/* Ready-to-start overlay */}
+      {!showTutorial &&
+        !hasGameStarted &&
+        countdown === null &&
+        !isGameOver &&
+        !isPaused && (
+          <View style={styles.centerOverlay}>
+            <TouchableOpacity
+              style={styles.bigPlayBtn}
+              onPress={resumeGame}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="play" size={40} color={theme.background} />
+            </TouchableOpacity>
+            <Text style={styles.overlayHint}>Tap to start</Text>
+          </View>
+        )}
+
+      {/* Pause overlay with resume */}
+      {isPaused && (
+        <View style={styles.centerOverlay}>
+          <Text style={styles.pausedText}>Paused</Text>
+          <TouchableOpacity
+            style={styles.bigPlayBtn}
+            onPress={resumeGame}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="play" size={40} color={theme.background} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Add countdown overlay */}
+      {countdown !== null && (
+        <View style={styles.countdownOverlay}>
+          <Text style={styles.countdownText}>{countdown || "GO!"}</Text>
+        </View>
+      )}
+
+      {/* Add Score Boost Overlay */}
+      {showScoreBoost && (
+        <Animated.View
+          style={[
+            styles.scoreBoostContainer,
+            {
+              opacity: scoreAnimation,
+              transform: [
+                {
+                  translateY: scoreAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, -50],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.scoreBoostText}>{boostText}</Text>
+        </Animated.View>
+      )}
+
+      {/* First-level interactive tutorial (top-most) */}
+      {showTutorial && <LevelTutorial onDone={finishTutorial} />}
+    </View>
   );
 };
 
@@ -791,7 +888,83 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
-    paddingTop: SCREEN_HEIGHT * 0.05, // Responsive top padding
+    paddingTop: SCREEN_HEIGHT * 0.06, // Responsive top padding
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
+    marginBottom: 10,
+  },
+  iconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  levelTitle: {
+    color: theme.white,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
+    marginBottom: 8,
+  },
+  statCard: {
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    minWidth: SCREEN_WIDTH * 0.22,
+  },
+  statLabel: {
+    color: theme.textMuted,
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  statValue: {
+    color: theme.white,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  centerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.overlay,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    zIndex: 60,
+  },
+  bigPlayBtn: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: theme.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  overlayHint: {
+    color: theme.white,
+    fontSize: 16,
+    fontWeight: "700",
   },
   header: {
     flexDirection: "row",
@@ -844,33 +1017,38 @@ const styles = StyleSheet.create({
     marginTop: -SCREEN_HEIGHT * 0.02,
   },
   gameArea: {
-    width: GRID_SIZE * CELL_SIZE,
-    height: GRID_SIZE * CELL_SIZE * 1.4,
+    // +6 compensates for the 3px wall border so the play grid stays exact.
+    width: GRID_SIZE * CELL_SIZE + 6,
+    height: GRID_SIZE * CELL_SIZE * 1.4 + 6,
     backgroundColor: theme.surface,
-    borderRadius: 8,
+    borderRadius: 10,
     position: "relative",
-    borderWidth: 0,
-    borderColor: theme.whiteA10,
+    borderWidth: 3,
+    borderColor: theme.wall,
     overflow: "hidden",
     transform: [{ scale: GAME_AREA_SCALE * 0.9 }], // Responsive scaling
   },
-  snake: {
-    width: CELL_SIZE ,
-    height: CELL_SIZE ,
+  // While Wall Pass is active the wall is passable, so hide it.
+  gameAreaNoWall: {
+    borderColor: "transparent",
+  },
+  snakeSegment: {
     position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "visible",
+    width: CELL_SIZE,
+    height: CELL_SIZE,
   },
   snakeHead: {
-    width: CELL_SIZE ,
-    height: CELL_SIZE ,
-    backgroundColor: "transparent",
+    backgroundColor: theme.primary,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: theme.background,
+    zIndex: 10,
   },
   snakeBody: {
-    width: CELL_SIZE ,
-    height: CELL_SIZE ,
-    backgroundColor: "transparent",
+    backgroundColor: theme.primaryDark,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.background,
   },
   food: {
     width: CELL_SIZE,
@@ -880,8 +1058,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emoji: {
-    width: CELL_SIZE +2.5 ,
-    height: CELL_SIZE+ 4 ,
+    width: CELL_SIZE + 2.5,
+    height: CELL_SIZE + 4,
     fontSize: CELL_SIZE - 2,
     lineHeight: CELL_SIZE,
   },
@@ -929,25 +1107,32 @@ const styles = StyleSheet.create({
   powerEmoji: {
     fontSize: SCREEN_WIDTH * 0.04,
     lineHeight: SCREEN_WIDTH * 0.04,
-    textAlign: 'center',
+    textAlign: "center",
   },
   powerTimer: {
     color: theme.primary,
     fontSize: SCREEN_WIDTH * 0.03,
     fontWeight: "bold",
     minWidth: SCREEN_WIDTH * 0.06,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scoreBoostContainer: {
     position: "absolute",
     top: "40%",
     alignSelf: "center",
     zIndex: 1000,
+    backgroundColor: theme.overlay,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.primaryA50,
   },
   scoreBoostText: {
     color: theme.primary,
-    fontSize: 48,
-    fontWeight: "bold",
+    fontSize: 30,
+    fontWeight: "800",
+    textAlign: "center",
     textShadowColor: theme.overlayMedium,
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
