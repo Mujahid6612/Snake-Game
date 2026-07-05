@@ -27,14 +27,14 @@ const TEST_IDS = {
 // Production IDs - Replace these with your actual IDs when publishing
 const PROD_IDS = {
   BANNER: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/2934735716', // this is not a valid id for ios
-    android: 'ca-app-pub-5435238274943994/2255845860',
-    default: 'ca-app-pub-5435238274943994/2255845860',
+    ios: 'ca-app-pub-3940256099942544/2934735716', // TODO: replace with real iOS banner unit when shipping iOS
+    android: 'ca-app-pub-8764706450036193/3446362934',
+    default: 'ca-app-pub-8764706450036193/3446362934',
   }),
   INTERSTITIAL: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/4411468910', // this is not a valid id for ios
-    android: 'ca-app-pub-5435238274943994/4547160800',
-    default: 'ca-app-pub-5435238274943994/4547160800',
+    ios: 'ca-app-pub-3940256099942544/4411468910', // TODO: replace with real iOS interstitial unit when shipping iOS
+    android: 'ca-app-pub-8764706450036193/5462187577',
+    default: 'ca-app-pub-8764706450036193/5462187577',
   }),
   APP_OPEN: Platform.select({
     ios: 'ca-app-pub-3940256099942544/5662855259', // this is not a valid id for ios

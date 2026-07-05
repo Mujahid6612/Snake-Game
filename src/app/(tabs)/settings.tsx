@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import SoundManager from "../../utils/soundManager";
+import { BannerAd } from "@/components/BannerAd";
 // import { useInterstitialAd } from "@/hooks/useInterstitialAd";
 
 // Constants for settings
@@ -119,6 +120,8 @@ const SettingsScreen = () => {
         </View>
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
+
+      <BannerAd />
 
       {/* Difficulty */}
       <View style={styles.card}>

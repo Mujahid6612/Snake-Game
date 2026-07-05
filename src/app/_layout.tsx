@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import mobileAds from "react-native-google-mobile-ads";
 // import { useAppOpenAd } from '@/hooks/useAppOpenAd';
 
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -60,25 +61,11 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
-  // useEffect(() => {
-  //   // Initialize mobile ads
-  //   mobileAds()
-  //     .initialize()
-  //     .then(adapterStatuses => {
-  //       console.log('Ads initialized');
-  //     });
-
-  //   // Handle app state changes for app open ads
-  //   const subscription = AppState.addEventListener('change', nextAppState => {
-  //     if (nextAppState === 'active') {
-  //       showAppOpenAd();
-  //     }
-  //   });
-
-  //   return () => {
-  //     subscription.remove();
-  //   };
-  // }, [showAppOpenAd]);
+  // Initialize the Google Mobile Ads SDK once on app start. Without this,
+  // banners/interstitials load unreliably or not at all.
+  useEffect(() => {
+    mobileAds().initialize();
+  }, []);
 
   if (!loaded) {
     return null;

@@ -2,6 +2,7 @@ import { theme } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useInterstitialAd } from "@/hooks/useInterstitialAd";
 
 interface GameOverModalProps {
   visible: boolean;
@@ -18,6 +19,14 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   onContinue,
   onHome,
 }) => {
+  const { showAd } = useInterstitialAd();
+
+  // Show the interstitial when the player taps Continue, then resume the game.
+  const handleContinue = async () => {
+    await showAd();
+    onContinue();
+  };
+
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
@@ -50,7 +59,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 
             <TouchableOpacity
               style={[styles.button, styles.continueButton]}
-              onPress={onContinue}
+              onPress={handleContinue}
               activeOpacity={0.85}
             >
               <Ionicons name="play" size={20} color={theme.primary} />

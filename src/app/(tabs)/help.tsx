@@ -1,3 +1,4 @@
+import { BannerAd } from "@/components/BannerAd";
 import { theme } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -96,6 +97,8 @@ const HelpScreen = () => {
         </View>
         <Text style={styles.headerTitle}>Help</Text>
       </View>
+
+      <BannerAd />
 
       <Section icon="game-controller-outline" title="How to play">
         <Bullet>Swipe up, down, left or right to steer the snake.</Bullet>

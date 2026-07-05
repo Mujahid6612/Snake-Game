@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { BannerAd } from "@/components/BannerAd";
 // import Intro from "@/components/intro";
 // import SoundManager from "@/utils/soundManager";
 
@@ -201,6 +202,8 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
+
+          <BannerAd />
 
           <ScrollView
             style={styles.scrollView}
