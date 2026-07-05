@@ -1,42 +1,51 @@
 import { theme } from "@/constants/theme";
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Animated,
-  ScrollView,
-  Text,
-  RefreshControl,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  Animated,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 // import Intro from "@/components/intro";
 // import SoundManager from "@/utils/soundManager";
 
 const TOTAL_LEVELS = 20;
-const LEVEL_EMOJIS = [
-  "🐍",
-  "🌿",
-  "🍎",
-  "⚡",
-  "🌈",
-  "🎯",
-  "🎮",
-  "🏆",
-  "💫",
-  "🌟",
-  "🔥",
-  "⭐",
-  "🎪",
-  "🎨",
-  "🎭",
-  "🎪",
-  "🎯",
-  "🎲",
-  "🎳",
-  "👑",
+
+// TEMP: unlock every level for testing. Set back to false to restore
+// normal progression (levels unlock as you complete the previous one).
+const UNLOCK_ALL_FOR_TESTING = true;
+
+type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+
+// Vector icons per level (escalating difficulty) — used instead of emoji so
+// glyphs render identically across Android OS versions.
+const LEVEL_ICONS: IconName[] = [
+  "sprout",
+  "leaf",
+  "food-apple",
+  "lightning-bolt",
+  "star-four-points",
+  "flash",
+  "run-fast",
+  "rocket",
+  "orbit",
+  "target",
+  "food-variant",
+  "auto-fix",
+  "shield",
+  "shield-alert",
+  "shield-star",
+  "skull",
+  "skull-outline",
+  "skull-crossbones",
+  "sword-cross",
+  "crown",
 ];
 
 export default function HomeScreen() {
@@ -53,7 +62,7 @@ export default function HomeScreen() {
   useFocusEffect(
     React.useCallback(() => {
       loadInitialData();
-    }, [])
+    }, []),
   );
 
   const loadInitialData = async () => {
@@ -79,11 +88,15 @@ export default function HomeScreen() {
           friction: 3,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
   const loadUnlockedLevels = async () => {
+    if (UNLOCK_ALL_FOR_TESTING) {
+      setUnlockedLevels(Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1));
+      return;
+    }
     try {
       const levels = [];
       for (let i = 1; i <= TOTAL_LEVELS; i++) {
@@ -154,6 +167,9 @@ export default function HomeScreen() {
   //   return <Intro />;
   // }
 
+  // Levels with a saved best score count as completed.
+  const completedCount = Object.keys(bestScores).length;
+
   return (
     <View style={styles.container}>
       {isLoading ? (
@@ -163,8 +179,27 @@ export default function HomeScreen() {
       ) : (
         <>
           <View style={styles.header}>
-            <Text style={styles.title}>Snake Game</Text>
-            <Text style={styles.subtitle}>Choose your level</Text>
+            <View style={styles.brand}>
+              <View style={styles.brandBadge}>
+                <MaterialCommunityIcons
+                  name="snake"
+                  size={26}
+                  color={theme.background}
+                />
+              </View>
+              <Text style={styles.brandTitle}>Classic Snake</Text>
+            </View>
+
+            <View style={styles.progressChip}>
+              <MaterialCommunityIcons
+                name="trophy"
+                size={16}
+                color={theme.accent}
+              />
+              <Text style={styles.progressText}>
+                {completedCount}/{TOTAL_LEVELS}
+              </Text>
+            </View>
           </View>
 
           <ScrollView
@@ -196,35 +231,62 @@ export default function HomeScreen() {
                   >
                     <TouchableOpacity
                       style={[
-                        styles.levelButton,
-                        !isUnlocked && styles.lockedLevel,
+                        styles.card,
+                        isUnlocked ? styles.cardUnlocked : styles.cardLocked,
                       ]}
                       onPress={() => handleLevelPress(level)}
                       disabled={!isUnlocked}
+                      activeOpacity={0.85}
                     >
-                      <View style={styles.levelContent}>
-                        <Text style={styles.levelEmoji}>
-                          {LEVEL_EMOJIS[index]}
-                        </Text>
-                        <Text style={styles.levelText}>Level {level}</Text>
-                      </View>
-                      {!isUnlocked && (
-                        <View style={styles.lockOverlay}>
-                          <Ionicons
-                            name="lock-closed"
-                            size={24}
-                            style={styles.lockIcon}
+                      <View
+                        style={[
+                          styles.inner,
+                          !isUnlocked && styles.innerLocked,
+                        ]}
+                      >
+                        <View
+                          style={[
+                            styles.iconBadge,
+                            !isUnlocked && styles.iconBadgeLocked,
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name={LEVEL_ICONS[index]}
+                            size={30}
+                            color={
+                              isUnlocked ? theme.background : theme.textMuted
+                            }
                           />
                         </View>
+                        <Text
+                          style={[
+                            styles.levelText,
+                            !isUnlocked && styles.levelTextLocked,
+                          ]}
+                        >
+                          Level {level}
+                        </Text>
+                      </View>
+
+                      {isUnlocked && !!bestScores[level] && (
+                        <View style={styles.scoreBadge}>
+                          <MaterialCommunityIcons
+                            name="star"
+                            size={12}
+                            color={theme.accent}
+                          />
+                          <Text style={styles.scoreText}>
+                            {bestScores[level]}
+                          </Text>
+                        </View>
                       )}
-                      {isUnlocked && bestScores[level] && (
-                        <View style={styles.scoreOverlay}>
-                          <View style={styles.scoreContainer}>
-                            <Ionicons name="star" size={16} color={theme.accent} />
-                            <Text style={styles.scoreText}>
-                              {bestScores[level]}
-                            </Text>
-                          </View>
+                      {!isUnlocked && (
+                        <View style={styles.lockBadge}>
+                          <MaterialCommunityIcons
+                            name="lock"
+                            size={13}
+                            color={theme.whiteA80}
+                          />
                         </View>
                       )}
                     </TouchableOpacity>
@@ -233,12 +295,6 @@ export default function HomeScreen() {
               })}
             </View>
           </ScrollView>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              Complete levels to unlock more challenges! 🎮
-            </Text>
-          </View>
         </>
       )}
     </View>
@@ -249,6 +305,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    paddingBottom: 100,
     backgroundColor: theme.background,
     backgroundImage:
       "linear-gradient(45deg, rgba(82, 183, 136, 0.05) 25%, transparent 25%, transparent 75%, rgba(82, 183, 136, 0.05) 75%, rgba(82, 183, 136, 0.05)), linear-gradient(45deg, rgba(82, 183, 136, 0.05) 25%, transparent 25%, transparent 75%, rgba(82, 183, 136, 0.05) 75%, rgba(82, 183, 136, 0.05))",
@@ -256,26 +313,46 @@ const styles = StyleSheet.create({
     backgroundPosition: "0 0, 10px 10px",
   },
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginVertical: 20,
-    shadowColor: theme.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    justifyContent: "space-between",
+    marginTop: 24,
+    marginBottom: 16,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 8,
+  brand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  brandBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: theme.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: "800",
     color: theme.white,
-    textShadowColor: theme.primaryA50,
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    letterSpacing: 0.3,
   },
-  subtitle: {
-    fontSize: 18,
-    opacity: 0.8,
-    color: theme.primary,
+  progressChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: theme.primaryA15,
+    borderWidth: 1,
+    borderColor: theme.primaryA50,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  progressText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: theme.white,
   },
   scrollView: {
     flex: 1,
@@ -284,93 +361,89 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    padding: 8,
+    paddingHorizontal: 4,
+    paddingTop: 4,
   },
   levelCard: {
     width: "48%",
-    marginBottom: 16,
+    marginBottom: 14,
+  },
+  card: {
+    borderRadius: 20,
+    padding: 6,
+    borderWidth: 1,
+  },
+  cardUnlocked: {
+    backgroundColor: theme.primaryA15,
+    borderColor: theme.primaryA50,
     shadowColor: theme.black,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
   },
-  levelButton: {
-    backgroundColor: theme.primaryA15,
-    borderRadius: 16,
-    padding: 16,
-    overflow: "hidden",
-    backdropFilter: "blur(8px)",
-  },
-  lockedLevel: {
+  cardLocked: {
     backgroundColor: theme.lockedSurface,
     borderColor: theme.lockedBorder,
   },
-  levelContent: {
+  inner: {
+    width: "100%",
+    borderRadius: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 14,
     alignItems: "center",
-    gap: 8,
-    position: "relative",
+    gap: 12,
+    backgroundColor: theme.surface,
   },
-  levelEmoji: {
-    fontSize: 28,
-    marginBottom: 4,
+  innerLocked: {
+    backgroundColor: theme.background,
+  },
+  iconBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: theme.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconBadgeLocked: {
+    backgroundColor: theme.whiteA10,
   },
   levelText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: theme.white,
   },
-  scoreOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: theme.overlayMedium,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 16,
+  levelTextLocked: {
+    color: theme.textMuted,
   },
-  scoreContainer: {
+  scoreBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 3,
+    backgroundColor: theme.overlay,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 3,
+    borderRadius: 12,
   },
   scoreText: {
-    fontSize: 14,
+    fontSize: 12,
     color: theme.accent,
-    fontWeight: "600",
+    fontWeight: "700",
   },
-  footer: {
-    padding: 16,
-    alignItems: "center",
-    backgroundColor: theme.primaryA05,
-    borderRadius: 16,
-    marginTop: 8,
-  },
-  footerText: {
-    fontSize: 14,
-    opacity: 0.8,
-    color: theme.primary,
-  },
-  lockOverlay: {
+  lockBadge: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: theme.overlayMedium,
-    justifyContent: "center",
+    top: 10,
+    right: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.overlay,
     alignItems: "center",
-    borderRadius: 16,
-  },
-  lockIcon: {
-    color: theme.whiteA80,
-    textShadowColor: theme.overlayMedium,
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
