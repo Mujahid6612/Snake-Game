@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
@@ -12,7 +13,7 @@ export default function TabLayout() {
     <>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: "#52B788",
+          tabBarActiveTintColor: theme.primary,
           headerShown: false,
           tabBarStyle: Platform.select({
             ios: {
@@ -20,8 +21,8 @@ export default function TabLayout() {
               position: "absolute",
             },
             android: {
-              backgroundColor: "black",
-              color: "white",
+              backgroundColor: theme.black,
+              color: theme.white,
             },
             default: {},
           }),
@@ -36,7 +37,7 @@ export default function TabLayout() {
                 name="home"
                 size={24}
                 style={{
-                  color: focused ? "#52B788" : "white",
+                  color: focused ? theme.primary : theme.white,
                 }}
               />
             ),
@@ -50,7 +51,7 @@ export default function TabLayout() {
               <Ionicons
                 size={24}
                 name="game-controller-outline"
-                style={{ color: focused ? "#52B788" : "white" }}
+                style={{ color: focused ? theme.primary : theme.white }}
               />
             ),
           }}
@@ -63,7 +64,7 @@ export default function TabLayout() {
               <Settings
                 size={24}
                 name="settings-outline"
-                style={{ color: focused ? "#52B788" : "white" }}
+                style={{ color: focused ? theme.primary : theme.white }}
               />
             ),
           }}
@@ -76,7 +77,7 @@ export default function TabLayout() {
               <Feather
                 name="help-circle"
                 size={24}
-                style={{ color: focused ? "#52B788" : "white" }}
+                style={{ color: focused ? theme.primary : theme.white }}
               />
             ),
           }}

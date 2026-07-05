@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -173,8 +174,8 @@ export default function HomeScreen() {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor="#52B788"
-                colors={["#52B788"]}
+                tintColor={theme.primary}
+                colors={[theme.primary]}
               />
             }
           >
@@ -219,7 +220,7 @@ export default function HomeScreen() {
                       {isUnlocked && bestScores[level] && (
                         <View style={styles.scoreOverlay}>
                           <View style={styles.scoreContainer}>
-                            <Ionicons name="star" size={16} color="#FFD700" />
+                            <Ionicons name="star" size={16} color={theme.accent} />
                             <Text style={styles.scoreText}>
                               {bestScores[level]}
                             </Text>
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     backgroundImage:
       "linear-gradient(45deg, rgba(82, 183, 136, 0.05) 25%, transparent 25%, transparent 75%, rgba(82, 183, 136, 0.05) 75%, rgba(82, 183, 136, 0.05)), linear-gradient(45deg, rgba(82, 183, 136, 0.05) 25%, transparent 25%, transparent 75%, rgba(82, 183, 136, 0.05) 75%, rgba(82, 183, 136, 0.05))",
     backgroundSize: "20px 20px",
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     marginVertical: 20,
-    shadowColor: "#52B788",
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -266,15 +267,15 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#fff",
-    textShadowColor: "rgba(82, 183, 136, 0.5)",
+    color: theme.white,
+    textShadowColor: theme.primaryA50,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 18,
     opacity: 0.8,
-    color: "#52B788",
+    color: theme.primary,
   },
   scrollView: {
     flex: 1,
@@ -288,22 +289,22 @@ const styles = StyleSheet.create({
   levelCard: {
     width: "48%",
     marginBottom: 16,
-    shadowColor: "#000",
+    shadowColor: theme.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
   },
   levelButton: {
-    backgroundColor: "rgba(82, 183, 136, 0.15)",
+    backgroundColor: theme.primaryA15,
     borderRadius: 16,
     padding: 16,
     overflow: "hidden",
     backdropFilter: "blur(8px)",
   },
   lockedLevel: {
-    backgroundColor: "rgba(100, 100, 100, 0.15)",
-    borderColor: "rgba(102, 102, 102, 0.3)",
+    backgroundColor: theme.lockedSurface,
+    borderColor: theme.lockedBorder,
   },
   levelContent: {
     alignItems: "center",
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.white,
   },
   scoreOverlay: {
     position: "absolute",
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: theme.overlayMedium,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 16,
@@ -339,20 +340,20 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     fontSize: 14,
-    color: "#FFD700",
+    color: theme.accent,
     fontWeight: "600",
   },
   footer: {
     padding: 16,
     alignItems: "center",
-    backgroundColor: "rgba(82, 183, 136, 0.05)",
+    backgroundColor: theme.primaryA05,
     borderRadius: 16,
     marginTop: 8,
   },
   footerText: {
     fontSize: 14,
     opacity: 0.8,
-    color: "#52B788",
+    color: theme.primary,
   },
   lockOverlay: {
     position: "absolute",
@@ -360,14 +361,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: theme.overlayMedium,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 16,
   },
   lockIcon: {
-    color: "rgba(255, 255, 255, 0.8)",
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    color: theme.whiteA80,
+    textShadowColor: theme.overlayMedium,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    color: "#52B788",
+    color: theme.primary,
     opacity: 0.8,
   },
 });

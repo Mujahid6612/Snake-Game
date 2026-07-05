@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -201,8 +202,8 @@ const SettingsScreen = () => {
             <Switch
               value={soundEffects}
               onValueChange={saveSoundEffects}
-              trackColor={{ false: "#767577", true: "#52B788" }}
-              thumbColor={soundEffects ? "#fff" : "#f4f3f4"}
+              trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
+              thumbColor={soundEffects ? theme.white : theme.switchThumbOff}
             />
           </View>
         </View>
@@ -218,8 +219,8 @@ const SettingsScreen = () => {
             <Switch
               value={backgroundMusic}
               onValueChange={saveBackgroundMusic}
-              trackColor={{ false: "#767577", true: "#52B788" }}
-              thumbColor={backgroundMusic ? "#fff" : "#f4f3f4"}
+              trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
+              thumbColor={backgroundMusic ? theme.white : theme.switchThumbOff}
             />
           </View>
         </View>
@@ -229,13 +230,13 @@ const SettingsScreen = () => {
             style={styles.deleteButton}
             onPress={handleDeleteGameData}
           >
-            <Ionicons name="trash-outline" size={24} color="#FF4444" />
+            <Ionicons name="trash-outline" size={24} color={theme.danger} />
             <Text style={styles.deleteButtonText}>Delete Game Data</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoContainer}>
-          <Ionicons name="information-circle" size={24} color="#52B788" />
+          <Ionicons name="information-circle" size={24} color={theme.primary} />
           <Text style={styles.infoText}>
             Settings will be applied to your next game
           </Text>
@@ -248,7 +249,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
   },
   contentContainer: {
     padding: 20,
@@ -260,23 +261,23 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: theme.white,
     marginBottom: 10,
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: theme.whiteA10,
     marginVertical: 10,
   },
   settingTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.white,
     marginBottom: 10,
   },
   settingDescription: {
     fontSize: 14,
-    color: "#888",
+    color: theme.textMuted,
     marginTop: 10,
     lineHeight: 20,
   },
@@ -288,52 +289,52 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: theme.whiteA10,
     alignItems: "center",
     justifyContent: "center",
   },
   selectedDifficulty: {
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
   },
   difficultyText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },
   selectedDifficultyText: {
-    color: "#fff",
+    color: theme.white,
   },
   soundSection: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: theme.whiteA10,
     padding: 20,
     borderRadius: 12,
   },
   infoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(82, 183, 136, 0.1)",
+    backgroundColor: theme.primaryA10,
     padding: 15,
     borderRadius: 12,
     gap: 10,
   },
   infoText: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 14,
   },
   deleteButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 68, 68, 0.1)",
+    backgroundColor: theme.dangerA10,
     padding: 15,
     borderRadius: 12,
     gap: 10,
   },
   deleteButtonText: {
-    color: "#FF4444",
+    color: theme.danger,
     fontSize: 16,
     fontWeight: "600",
   },

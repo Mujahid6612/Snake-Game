@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -55,12 +56,12 @@ const styles = StyleSheet.create({
     minWidth: 40,
   },
   levelNumber: {
-    color: '#52B788',
+    color: theme.primary,
     fontSize: 20,
     fontWeight: 'bold',
   },
   levelLabel: {
-    color: '#888',
+    color: theme.textMuted,
     fontSize: 10,
     fontWeight: '600',
   },
@@ -71,17 +72,17 @@ const styles = StyleSheet.create({
   progressBackground: {
     width: '100%',
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: theme.whiteA10,
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#52B788',
+    backgroundColor: theme.primary,
     borderRadius: 4,
   },
   scoreText: {
-    color: '#fff',
+    color: theme.white,
     fontSize: 12,
     marginTop: 4,
     fontWeight: '500',

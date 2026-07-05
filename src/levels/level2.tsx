@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -51,7 +52,7 @@ const Level2 = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
-  const { sound, eatSound, gameOverSound, scoreBoostSound } = useLevelSounds();
+  const { eatSound, gameOverSound, scoreBoostSound } = useLevelSounds();
   const [powerUp, setPowerUp] = useState<null | {
     type: string;
     position: { x: number; y: number };
@@ -784,7 +785,7 @@ const Level2 = () => {
           {!isPlaying && !countdown && (
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.gameButton} onPress={restartGame}>
-                <Ionicons name="refresh" size={24} color="white" />
+                <Ionicons name="refresh" size={24} color={theme.white} />
                 <Text style={styles.buttonText}>Restart</Text>
               </TouchableOpacity>
 
@@ -797,7 +798,7 @@ const Level2 = () => {
                   onPress={continueGame}
                   // disabled={!isAdLoaded || adCooldown > 0}
                 >
-                  <Ionicons name="play" size={24} color="white" />
+                  <Ionicons name="play" size={24} color={theme.white} />
                   <Text style={styles.buttonText}>
                     Continue ({lastScore})
                     {/* {adCooldown > 0 && ` (${adCooldown}s)`} */}
@@ -822,7 +823,7 @@ const Level2 = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     paddingTop: SCREEN_HEIGHT * 0.05,
   },
   header: {
@@ -834,20 +835,20 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT * 0.08,
   },
   scoreCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: theme.whiteA10,
     padding: SCREEN_WIDTH * 0.025,
     borderRadius: 12,
     alignItems: "center",
     minWidth: SCREEN_WIDTH * 0.2,
   },
   scoreTitle: {
-    color: "#888",
+    color: theme.textMuted,
     fontSize: SCREEN_WIDTH * 0.035,
     fontWeight: "600",
     marginBottom: 2,
   },
   scoreValue: {
-    color: "#fff",
+    color: theme.white,
     fontSize: SCREEN_WIDTH * 0.045,
     fontWeight: "bold",
   },
@@ -864,11 +865,11 @@ const styles = StyleSheet.create({
   gameArea: {
     width: GRID_SIZE * CELL_SIZE,
     height: GRID_SIZE * CELL_SIZE * 1.4,
-    backgroundColor: "#222",
+    backgroundColor: theme.surface,
     borderRadius: 8,
     position: "relative",
     borderWidth: 0,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: theme.whiteA10,
     overflow: "hidden",
     transform: [{ scale: GAME_AREA_SCALE * 0.9 }],
     boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
@@ -908,7 +909,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   controlsText: {
-    color: "rgba(255, 255, 255, 0.6)",
+    color: theme.whiteA60,
     fontSize: 16,
     marginBottom: 20,
   },
@@ -921,14 +922,14 @@ const styles = StyleSheet.create({
   gameButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 20,
     gap: 6,
   },
   buttonText: {
-    color: "white",
+    color: theme.white,
     fontSize: 14,
     fontWeight: "700",
   },
@@ -946,7 +947,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   powerTimer: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: SCREEN_WIDTH * 0.03,
     fontWeight: "bold",
     minWidth: SCREEN_WIDTH * 0.06,
@@ -964,10 +965,10 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   scoreBoostText: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 48,
     fontWeight: "bold",
-    textShadowColor: "rgba(0, 0, 0, 0.5)",
+    textShadowColor: theme.overlayMedium,
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
   },
@@ -977,13 +978,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: theme.overlay,
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100,
   },
   countdownText: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 72,
     fontWeight: "bold",
   },
@@ -995,7 +996,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   pausedText: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 48,
     fontWeight: "bold",
   },
@@ -1010,7 +1011,7 @@ const styles = StyleSheet.create({
   headerPower: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: theme.overlay,
     padding: 6,
     paddingHorizontal: 8,
     borderRadius: 16,

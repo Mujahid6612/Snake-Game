@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Animated, Easing } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -123,7 +124,7 @@ const GameCompletionModal = ({ visible, onClose, finalScore, onRestart }: GameCo
               }
             ]}
           >
-            <Ionicons name="trophy" size={80} color="#FFD700" />
+            <Ionicons name="trophy" size={80} color={theme.accent} />
           </Animated.View>
 
           <Text style={styles.title}>Game Complete! 🎉</Text>
@@ -150,7 +151,7 @@ const GameCompletionModal = ({ visible, onClose, finalScore, onRestart }: GameCo
               onPress={onRestart}
             >
               <Text style={styles.buttonText}>Play Again</Text>
-              <Ionicons name="refresh" size={20} color="#fff" />
+              <Ionicons name="refresh" size={20} color={theme.white} />
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -158,7 +159,7 @@ const GameCompletionModal = ({ visible, onClose, finalScore, onRestart }: GameCo
               onPress={onClose}
             >
               <Text style={styles.buttonText}>Close</Text>
-              <Ionicons name="close" size={20} color="#fff" />
+              <Ionicons name="close" size={20} color={theme.white} />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -170,19 +171,19 @@ const GameCompletionModal = ({ visible, onClose, finalScore, onRestart }: GameCo
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: theme.overlayHeavy,
     justifyContent: "center",
     alignItems: "center",
   },
   dialog: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     borderRadius: 25,
     padding: 24,
     width: "90%",
     maxWidth: 400,
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#52B788",
+    borderColor: theme.primary,
   },
   celebrationIcons: {
     flexDirection: "row",
@@ -196,19 +197,19 @@ const styles = StyleSheet.create({
   trophyContainer: {
     marginVertical: 20,
     padding: 20,
-    backgroundColor: "rgba(255, 215, 0, 0.1)",
+    backgroundColor: theme.goldA10,
     borderRadius: 50,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#52B788",
+    color: theme.primary,
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 20,
-    color: "#fff",
+    color: theme.white,
     marginBottom: 24,
     fontWeight: "600",
   },
@@ -222,22 +223,22 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: "rgba(82, 183, 136, 0.1)",
+    backgroundColor: theme.primaryA10,
     padding: 16,
     borderRadius: 15,
   },
   statLabel: {
-    color: "#888",
+    color: theme.textMuted,
     fontSize: 14,
     marginBottom: 4,
   },
   statValue: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 24,
     fontWeight: "bold",
   },
   achievementText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 24,
@@ -256,13 +257,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   playAgainButton: {
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
   },
   closeButton: {
-    backgroundColor: "#666",
+    backgroundColor: theme.gray600,
   },
   buttonText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },

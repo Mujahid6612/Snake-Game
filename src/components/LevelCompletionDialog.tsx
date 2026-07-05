@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -68,7 +69,7 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
 
           <View style={styles.statsContainer}>
             <Text style={styles.statsText}>Score: {score}</Text>
-            <Ionicons name="star" size={24} color="#FFD700" />
+            <Ionicons name="star" size={24} color={theme.accent} />
           </View>
 
           <View style={styles.buttonContainer}>
@@ -77,7 +78,7 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
               onPress={handleContinue}
             >
               <Text style={styles.buttonText}>Keep Playing</Text>
-              <Ionicons name="play" size={20} color="#fff" />
+              <Ionicons name="play" size={20} color={theme.white} />
             </TouchableOpacity>
             {/* 
             <TouchableOpacity 
@@ -85,7 +86,7 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
               onPress={handleNextLevel}
             >
               <Text style={styles.buttonText}>Go to Next Level</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
+              <Ionicons name="arrow-forward" size={20} color={theme.white} />
             </TouchableOpacity> */}
           </View>
         </View>
@@ -97,18 +98,18 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: theme.overlay,
     justifyContent: "center",
     alignItems: "center",
   },
   dialog: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     borderRadius: 20,
     padding: 24,
     width: "85%",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#52B788",
+    borderColor: theme.primary,
   },
   celebrationIcons: {
     flexDirection: "row",
@@ -122,13 +123,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: theme.white,
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 18,
-    color: "#52B788",
+    color: theme.primary,
     marginBottom: 20,
     fontWeight: "600",
   },
@@ -137,12 +138,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     marginBottom: 24,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: theme.whiteA10,
     padding: 12,
     borderRadius: 12,
   },
   statsText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -159,13 +160,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   continueButton: {
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
   },
   nextButton: {
-    backgroundColor: "#2D6A4F",
+    backgroundColor: theme.primaryDark,
   },
   buttonText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },

@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React from "react";
 import {
   Modal,
@@ -321,7 +322,7 @@ const LevelInfoModal = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color="#888" />
+            <Ionicons name="close" size={24} color={theme.textMuted} />
           </TouchableOpacity>
 
           <Text style={styles.levelNumber}>Level {level}</Text>
@@ -336,7 +337,7 @@ const LevelInfoModal = ({
             <View style={styles.challengesContainer}>
               {levelData.challenges.map((challenge, index) => (
                 <View key={index} style={styles.challengeItem}>
-                  <Ionicons name="checkmark-circle" size={20} color="#52B788" />
+                  <Ionicons name="checkmark-circle" size={20} color={theme.primary} />
                   <Text style={styles.challengeText}>{challenge}</Text>
                 </View>
               ))}
@@ -355,19 +356,19 @@ const LevelInfoModal = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: theme.overlay,
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     borderRadius: 20,
     padding: 24,
     width: "85%",
     maxWidth: 400,
     maxHeight: "80%", // Limit maximum height
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderColor: theme.whiteA10,
   },
   closeButton: {
     position: "absolute",
@@ -376,19 +377,19 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   levelNumber: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
   },
   title: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 12,
   },
   description: {
-    color: "#888",
+    color: theme.textMuted,
     fontSize: 16,
     marginBottom: 16,
   },
@@ -409,19 +410,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   challengeText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     flex: 1,
   },
   startButton: {
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: "center",
     marginTop: 8, // Add some space after scroll
   },
   startButtonText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 18,
     fontWeight: "bold",
   },

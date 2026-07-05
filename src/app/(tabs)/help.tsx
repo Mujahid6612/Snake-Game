@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -37,7 +38,7 @@ const HelpScreen = () => {
         <Ionicons
           name={expandedSection === title ? "chevron-up" : "chevron-down"}
           size={24}
-          color="#52B788"
+          color={theme.primary}
         />
       </TouchableOpacity>
       {expandedSection === title && (
@@ -155,19 +156,19 @@ const HelpScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     padding: 16,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
+    color: theme.white,
     marginBottom: 24,
     marginTop: 40,
   },
   section: {
     marginBottom: 16,
-    backgroundColor: "#222",
+    backgroundColor: theme.surface,
     borderRadius: 12,
     overflow: "hidden",
   },
@@ -180,27 +181,27 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#fff",
+    color: theme.white,
   },
   sectionContent: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: "#333",
+    borderTopColor: theme.border,
   },
   contentText: {
-    color: "#ccc",
+    color: theme.textFaint,
     fontSize: 16,
     lineHeight: 24,
   },
   contactButton: {
-    backgroundColor: "#52B788",
+    backgroundColor: theme.primary,
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
     marginTop: 16,
   },
   contactButtonText: {
-    color: "#fff",
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },

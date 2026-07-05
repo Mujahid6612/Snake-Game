@@ -1,3 +1,4 @@
+import { theme } from "@/constants/theme";
 import { Link, Stack } from "expo-router";
 import { StyleSheet, Text, View, Animated } from "react-native";
 import { useEffect } from "react";
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: theme.background,
     backgroundImage:
       "linear-gradient(45deg, rgba(82, 183, 136, 0.05) 25%, transparent 25%, transparent 75%, rgba(82, 183, 136, 0.05) 75%, rgba(82, 183, 136, 0.05))",
     backgroundSize: "20px 20px",
@@ -59,20 +60,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
-    textShadowColor: "rgba(82, 183, 136, 0.5)",
+    color: theme.white,
+    textShadowColor: theme.primaryA50,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
     marginBottom: 20,
   },
   link: {
-    backgroundColor: "rgba(82, 183, 136, 0.15)",
+    backgroundColor: theme.primaryA15,
     padding: 16,
     borderRadius: 16,
     marginTop: 15,
   },
   linkText: {
-    color: "#52B788",
+    color: theme.primary,
     fontSize: 16,
     fontWeight: "600",
   },

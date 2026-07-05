@@ -7,8 +7,11 @@ import "react-native-reanimated";
 // import { useAppOpenAd } from '@/hooks/useAppOpenAd';
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AppState, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import SoundManager from "@/utils/soundManager";
+import { STORAGE_KEYS } from "@/app/(tabs)/settings";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +28,36 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  // Background music lifecycle. Owned here (not per-screen) so music honors
+  // the saved preference no matter which screen the app opens on, and pauses
+  // while the app is backgrounded.
+  useEffect(() => {
+    const soundManager = SoundManager.getInstance();
+
+    const startIfEnabled = async () => {
+      try {
+        const pref = await AsyncStorage.getItem(STORAGE_KEYS.BACKGROUND_MUSIC);
+        if (pref === "true") {
+          soundManager.playBackgroundMusic();
+        }
+      } catch (error) {
+        console.error("Error starting background music:", error);
+      }
+    };
+
+    startIfEnabled();
+
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        startIfEnabled();
+      } else {
+        soundManager.stopBackgroundMusic();
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   // useEffect(() => {
   //   // Initialize mobile ads
