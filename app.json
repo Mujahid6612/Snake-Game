@@ -1,23 +1,34 @@
 {
   "expo": {
-    "name": "snake-game-e2xpgpf4-tqklcvqx5syi",
+    "name": "Classic Snake",
     "slug": "snake-game-e2xpgpf4-tqklcvqx5syi",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "snakegamee2xpgpf4tqklcvqx5syi",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "imageWidth": 350,
+      "imageHeight": 270,
+      "backgroundColor": "#000000"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
+    "androidStatusBar": {
+      "backgroundColor": "#52B788"
+    },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/adaptive-icon.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mujahid123.snakegamee2xpgpf4tqklcvqx5syi"
     },
     "web": {
       "output": "static",
@@ -28,15 +39,33 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 350,
+          "imageHeight": 270,
+          "backgroundColor": "#000000"
         }
-      ]
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-5435238274943994~9956998647",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ],
+      "expo-build-properties",
+      "expo-audio",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d73ba0ce-c46e-4e4e-b551-73c7ff9b2387"
+      }
+    },
+    "owner": "mujahid123"
   }
 }

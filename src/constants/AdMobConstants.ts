@@ -1,0 +1,56 @@
+import { Platform } from 'react-native';
+
+// Test IDs for development
+const TEST_IDS = {
+  BANNER: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/2934735716',
+    android: 'ca-app-pub-3940256099942544/6300978111',
+    default: 'ca-app-pub-3940256099942544/6300978111',
+  }),
+  INTERSTITIAL: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/4411468910',
+    android: 'ca-app-pub-3940256099942544/1033173712',
+    default: 'ca-app-pub-3940256099942544/1033173712',
+  }),
+  APP_OPEN: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/5662855259',
+    android: 'ca-app-pub-3940256099942544/9257395921',
+    default: 'ca-app-pub-3940256099942544/9257395921',
+  }),
+  REWARDED: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/1712485313',  // Correct Test ID
+    android: 'ca-app-pub-3940256099942544/5224354917', // Correct Test ID
+    default: 'ca-app-pub-3940256099942544/5224354917',
+  }),
+};
+
+// Production IDs - Replace these with your actual IDs when publishing
+const PROD_IDS = {
+  BANNER: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/2934735716', // this is not a valid id for ios
+    android: 'ca-app-pub-5435238274943994/2255845860',
+    default: 'ca-app-pub-5435238274943994/2255845860',
+  }),
+  INTERSTITIAL: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/4411468910', // this is not a valid id for ios
+    android: 'ca-app-pub-5435238274943994/4547160800',
+    default: 'ca-app-pub-5435238274943994/4547160800',
+  }),
+  APP_OPEN: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/5662855259', // this is not a valid id for ios
+    android: 'ca-app-pub-5435238274943994/1107712894',
+    default: 'ca-app-pub-5435238274943994/1107712894',
+  }),
+  REWARDED: Platform.select({
+    ios: 'ca-app-pub-3940256099942544/1712485313',  // This is not a valid id for ios
+    android: 'ca-app-pub-5435238274943994/9811041877',
+    default: 'ca-app-pub-5435238274943994/9811041877',
+  }),
+};
+
+
+// ... existing code ...
+// Use this to switch between test and production ads
+const IS_TESTING = true;
+
+export const AD_UNIT_IDS = IS_TESTING ? TEST_IDS : PROD_IDS; 
