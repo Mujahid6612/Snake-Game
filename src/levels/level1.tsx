@@ -94,7 +94,7 @@ const SnakeGame = () => {
   const [hasGameStarted, setHasGameStarted] = useState(false);
   const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(true);
   const [currentLevel, setCurrentLevel] = useState(1);
-  const POINTS_TO_NEXT_LEVEL = 80;
+  const POINTS_TO_NEXT_LEVEL = 70;
   const [showLevelComplete, setShowLevelComplete] = useState(false);
   const [levelBestScore, setLevelBestScore] = useState(0);
   const [hasShownLevelComplete, setHasShownLevelComplete] = useState(false);

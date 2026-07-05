@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
-  TouchableWithoutFeedback,
   Text,
   TouchableOpacity,
   Animated,
@@ -12,12 +11,13 @@ import {
 import { useLevelSounds } from "@/hooks/useLevelSounds";
 import type { AudioPlayer } from "expo-audio";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { STORAGE_KEYS, DIFFICULTY_SPEEDS } from "../app/(tabs)/settings";
 import LevelProgressBar from "../components/LevelProgressBar";
 import LevelCompletionDialog from "../components/LevelCompletionDialog";
-import LevelInfoModal from "@/components/LevelInfoModal";
+import GameOverModal from "../components/GameOverModal";
 import GameCompletionModal from "@/components/GameCompletionModal";
 import { router } from "expo-router";
 // import { useRewardedAd } from "@/hooks/useRewardedAd";
@@ -51,7 +51,21 @@ const GAME_ELEMENTS = {
   RESTRICTED: "🚫",
 };
 
+type MciName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+
+// Vector icons for power-ups (consistent across Android versions).
+const POWER_ICONS: Record<string, MciName> = {
+  SPEED_UP: "lightning-bolt",
+  SPEED_DOWN: "snail",
+  SCORE_BOOST: "star-four-points",
+  WALL_PASS: "wall",
+  SHIELD: "shield",
+  GHOST: "ghost",
+  TIME_FREEZE: "snowflake",
+};
+
 const Level20 = () => {
+  const router = useRouter();
   const INITIAL_GAME_SPEED = 70; // Keep speed at 7
 
   // Reset to original speed of 60
@@ -180,7 +194,6 @@ const Level20 = () => {
   const [levelBestScore, setLevelBestScore] = useState(0);
   const [hasShownLevelComplete, setHasShownLevelComplete] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [showLevelInfo, setShowLevelInfo] = useState(true);
   const [isShielded, setIsShielded] = useState(false);
   const [obstaclesFrozen, setObstaclesFrozen] = useState(false);
   const [showGameCompletion, setShowGameCompletion] = useState(false);
@@ -189,6 +202,7 @@ const Level20 = () => {
   const [lastScore, setLastScore] = useState(0);
   const [adCooldown, setAdCooldown] = useState(0);
   const [baseSpeed, setBaseSpeed] = useState(INITIAL_GAME_SPEED);
+  const [boostText, setBoostText] = useState("+5");
 
 
   const loadSettings = async () => {
@@ -335,7 +349,6 @@ const Level20 = () => {
 
       case "SCORE_BOOST":
         setScore((prev) => prev + 5);
-        animateScore();
         break;
 
       case "WALL_PASS":
@@ -348,6 +361,8 @@ const Level20 = () => {
         updatePowerDuration(type, totalDuration);
         break;
     }
+
+    showPowerToast(type === "SCORE_BOOST" ? "+5" : powerInfo.name);
   };
 
   // Modified power-up countdown effect
@@ -428,7 +443,6 @@ const Level20 = () => {
   }, [score, hasShownGameCompletion]);
 
   useEffect(() => {
-    setShowLevelInfo(true);
     setCountdown(null);
     setIsPlaying(false);
   }, []);
@@ -673,6 +687,30 @@ const Level20 = () => {
     ]).start(() => setShowScoreBoost(false));
   };
 
+  const showPowerToast = (text: string) => {
+    setBoostText(text);
+    animateScore();
+  };
+
+  // Keep power effects in sync with the active power-ups so each one ends
+  // exactly when its timer runs out (fixes powers lingering after expiry).
+  useEffect(() => {
+    setIsShielded(activePowers.some((p) => p.type === "SHIELD"));
+    setCanPassWalls(activePowers.some((p) => p.type === "WALL_PASS"));
+    if (activePowers.some((p) => p.type === "SPEED_UP")) {
+      setGameSpeed(Math.round(baseSpeed * 0.7));
+    } else if (activePowers.some((p) => p.type === "SPEED_DOWN")) {
+      setGameSpeed(Math.round(baseSpeed * 1.3));
+    } else {
+      setGameSpeed(baseSpeed);
+    }
+  }, [activePowers, baseSpeed]);
+
+  const goToNextLevel = () => {
+    setShowLevelComplete(false);
+    router.replace(`/game-levels?level=${currentLevel + 1}`);
+  };
+
   // Add pause handling
   useEffect(() => {
     if (isPaused) {
@@ -783,13 +821,6 @@ const Level20 = () => {
     setIsPlaying(true);
   };
 
-  const handleStartGame = () => {
-    setShowLevelInfo(false);
-    if (!hasGameStarted) {
-      setCountdown(3);
-    }
-  };
-
   const handleCloseGameCompletion = () => {
     setShowGameCompletion(false);
     setIsPlaying(false);
@@ -886,47 +917,56 @@ const Level20 = () => {
   }, [adCooldown]);
 
   return (
-    <TouchableWithoutFeedback onPress={() => resumeGame()}>
-      <View style={styles.container}>
-        {/* Add LevelInfoModal */}
-        <LevelInfoModal
-          visible={showLevelInfo}
-          level={currentLevel}
-          onStart={handleStartGame}
-          onClose={() => {
-            handleStartGame();
-            setShowLevelInfo(false);
-          }}
-        />
+    <View style={styles.container}>
+        {/* Top bar: back · title · play/pause */}
+        <View style={styles.topBar}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => router.back()}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="chevron-back" size={24} color={theme.white} />
+          </TouchableOpacity>
 
-        {/* Game Header */}
-        <View style={styles.header}>
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreTitle}>Score</Text>
-            <Text style={styles.scoreValue}>{score}</Text>
+          <Text style={styles.levelTitle}>Level {currentLevel}</Text>
+
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={resumeGame}
+            disabled={isGameOver}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={isPlaying ? "pause" : "play"}
+              size={22}
+              color={isGameOver ? theme.textMuted : theme.primary}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Stats */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Score</Text>
+            <Text style={styles.statValue}>{score}</Text>
           </View>
 
-          {/* Power ups counter in header */}
           <View style={styles.headerPowersContainer}>
             {activePowers.map((power, index) => (
               <View key={`${power.type}-${index}`} style={styles.headerPower}>
-                <Text style={styles.powerEmoji}>
-                  {
-                    (
-                      GAME_ELEMENTS[
-                        power.type as keyof typeof GAME_ELEMENTS
-                      ] as any
-                    ).emoji
-                  }
-                </Text>
+                <MaterialCommunityIcons
+                  name={POWER_ICONS[power.type]}
+                  size={15}
+                  color={theme.primary}
+                />
                 <Text style={styles.powerTimer}>{power.timeLeft}s</Text>
               </View>
             ))}
           </View>
 
-          <View style={styles.scoreCard}>
-            <Text style={styles.scoreTitle}>Best</Text>
-            <Text style={styles.scoreValue}>{highScore}</Text>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Best</Text>
+            <Text style={styles.statValue}>{highScore}</Text>
           </View>
         </View>
 
@@ -955,28 +995,35 @@ const Level20 = () => {
               },
             ]}
           >
-            <Text style={styles.scoreBoostText}>+5</Text>
+            <Text style={styles.scoreBoostText}>{boostText}</Text>
           </Animated.View>
         )}
 
         {/* Add countdown overlay */}
         {countdown !== null && (
           <View style={styles.countdownOverlay}>
-            <Text style={styles.countdownText}>{countdown}</Text>
+            <Text style={styles.countdownText}>{countdown || "GO!"}</Text>
           </View>
         )}
 
         {/* Add pause overlay */}
         {isPaused && (
-          <View style={styles.countdownOverlay}>
-            <Text style={styles.pausedText}>PAUSED</Text>
+          <View style={styles.centerOverlay}>
+            <Text style={styles.pausedText}>Paused</Text>
+            <TouchableOpacity
+              style={styles.bigPlayBtn}
+              onPress={resumeGame}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="play" size={40} color={theme.background} />
+            </TouchableOpacity>
           </View>
         )}
 
         {/* Game Area */}
         <View style={styles.gameContainer}>
           <PanGestureHandler onHandlerStateChange={handleGesture}>
-            <View style={styles.gameArea}>
+            <View style={[styles.gameArea, canPassWalls && styles.gameAreaNoWall]}>
               {/* Add restricted areas visualization */}
               {restrictedAreas.map((area, index) => (
                 <View
@@ -1014,27 +1061,34 @@ const Level20 = () => {
               ))}
 
               {snakes.map((snake, snakeIndex) =>
-                snake.map((segment, index) => (
-                  <View
-                    key={`snake-${snakeIndex}-${index}`}
-                    style={[
-                      styles.snake,
-                      index === 0 ? styles.snakeHead : styles.snakeBody,
-                      {
-                        left: segment.x * CELL_SIZE,
-                        top: segment.y * CELL_SIZE,
-                      },
-                    ]}
-                  >
-                    <Text style={styles.emoji}>
-                      {snakeIndex === 1
-                        ? "💀" // Enemy snake emoji
-                        : index === 0
-                        ? GAME_ELEMENTS.SNAKE_HEAD
-                        : GAME_ELEMENTS.SNAKE_BODY}
-                    </Text>
-                  </View>
-                ))
+                snake.map((segment, index) =>
+                  snakeIndex === 1 ? (
+                    <View
+                      key={`snake-${snakeIndex}-${index}`}
+                      style={[
+                        styles.obstacle,
+                        {
+                          left: segment.x * CELL_SIZE,
+                          top: segment.y * CELL_SIZE,
+                        },
+                      ]}
+                    >
+                      <Text style={styles.emoji}>💀</Text>
+                    </View>
+                  ) : (
+                    <View
+                      key={`snake-${snakeIndex}-${index}`}
+                      style={[
+                        styles.snakeSegment,
+                        index === 0 ? styles.snakeHead : styles.snakeBody,
+                        {
+                          left: segment.x * CELL_SIZE,
+                          top: segment.y * CELL_SIZE,
+                        },
+                      ]}
+                    />
+                  )
+                )
               )}
               {powerUp && (
                 <View
@@ -1046,15 +1100,11 @@ const Level20 = () => {
                     },
                   ]}
                 >
-                  <Text style={styles.powerUpEmoji}>
-                    {
-                      (
-                        GAME_ELEMENTS[
-                          powerUp.type as keyof typeof GAME_ELEMENTS
-                        ] as any
-                      )?.emoji
-                    }
-                  </Text>
+                  <MaterialCommunityIcons
+                    name={POWER_ICONS[powerUp.type]}
+                    size={CELL_SIZE}
+                    color={theme.accent}
+                  />
                 </View>
               )}
               <View
@@ -1072,31 +1122,6 @@ const Level20 = () => {
         {/* Game Controls */}
         <View style={styles.controls}>
           <Text style={styles.controlsText}>Swipe to control the snake</Text>
-          {!isPlaying && !countdown && (
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.gameButton} onPress={restartGame}>
-                <Ionicons name="refresh" size={24} color={theme.white} />
-                <Text style={styles.buttonText}>Restart</Text>
-              </TouchableOpacity>
-
-              {isGameOver && (
-                <TouchableOpacity
-                  style={[
-                    styles.gameButton,
-                    // (!isAdLoaded || adCooldown > 0) && { opacity: 0.5 },
-                  ]}
-                  onPress={continueGame}
-                  // disabled={!isAdLoaded || adCooldown > 0}
-                >
-                  <Ionicons name="play" size={24} color={theme.white} />
-                  <Text style={styles.buttonText}>
-                    Continue ({lastScore})
-                    {/* {adCooldown > 0 && ` (${adCooldown}s)`} */}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
         </View>
 
         <LevelCompletionDialog
@@ -1117,8 +1142,27 @@ const Level20 = () => {
             router.replace("/(tabs)");
           }}
         />
+        <GameOverModal
+          visible={isGameOver}
+          score={score}
+          onRestart={restartGame}
+          onContinue={continueGame}
+          onHome={() => router.back()}
+        />
+
+        {!hasGameStarted && countdown === null && !isGameOver && !isPaused && (
+          <View style={styles.centerOverlay}>
+            <TouchableOpacity
+              style={styles.bigPlayBtn}
+              onPress={resumeGame}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="play" size={40} color={theme.background} />
+            </TouchableOpacity>
+            <Text style={styles.overlayHint}>Tap to start</Text>
+          </View>
+        )}
       </View>
-    </TouchableWithoutFeedback>
   );
 };
 
@@ -1126,7 +1170,83 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.background,
-    paddingTop: SCREEN_HEIGHT * 0.05,
+    paddingTop: SCREEN_HEIGHT * 0.06,
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
+    marginBottom: 10,
+  },
+  iconBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  levelTitle: {
+    color: theme.white,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: SCREEN_WIDTH * 0.04,
+    marginBottom: 8,
+  },
+  statCard: {
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    minWidth: SCREEN_WIDTH * 0.22,
+  },
+  statLabel: {
+    color: theme.textMuted,
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
+  statValue: {
+    color: theme.white,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  centerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.overlay,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+    zIndex: 60,
+  },
+  bigPlayBtn: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: theme.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  overlayHint: {
+    color: theme.white,
+    fontSize: 16,
+    fontWeight: "700",
   },
   header: {
     flexDirection: "row",
@@ -1162,30 +1282,36 @@ const styles = StyleSheet.create({
     marginTop: -SCREEN_HEIGHT * 0.02,
   },
   gameArea: {
-    width: GRID_SIZE * CELL_SIZE,
-    height: GRID_SIZE * CELL_SIZE * 1.4,
+    width: GRID_SIZE * CELL_SIZE + 6,
+    height: GRID_SIZE * CELL_SIZE * 1.4 + 6,
     backgroundColor: theme.surface,
-    borderRadius: 8,
+    borderRadius: 10,
     position: "relative",
-    borderWidth: 0,
-    borderColor: theme.whiteA10,
+    borderWidth: 3,
+    borderColor: theme.wall,
     overflow: "hidden",
     transform: [{ scale: GAME_AREA_SCALE * 0.9 }],
-    boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
   },
-  snake: {
+  gameAreaNoWall: {
+    borderColor: "transparent",
+  },
+  snakeSegment: {
+    position: "absolute",
     width: CELL_SIZE,
     height: CELL_SIZE,
-    position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "visible",
   },
   snakeHead: {
-    backgroundColor: "transparent",
+    backgroundColor: theme.primary,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: theme.background,
+    zIndex: 10,
   },
   snakeBody: {
-    backgroundColor: "transparent",
+    backgroundColor: theme.primaryDark,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.background,
   },
   food: {
     width: CELL_SIZE,

@@ -1,23 +1,23 @@
 import { theme } from "@/constants/theme";
-import React, { useState, useEffect } from "react";
+import { useLevelSounds } from "@/hooks/useLevelSounds";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { AudioPlayer } from "expo-audio";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  Animated,
+  Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
-  Animated,
-  Dimensions,
+  View,
 } from "react-native";
-import { useLevelSounds } from "@/hooks/useLevelSounds";
-import type { AudioPlayer } from "expo-audio";
 import { PanGestureHandler, State } from "react-native-gesture-handler";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { STORAGE_KEYS, DIFFICULTY_SPEEDS } from "../app/(tabs)/settings";
-import LevelProgressBar from "../components/LevelProgressBar";
-import LevelCompletionDialog from "../components/LevelCompletionDialog";
+import { DIFFICULTY_SPEEDS, STORAGE_KEYS } from "../app/(tabs)/settings";
 import GameOverModal from "../components/GameOverModal";
+import LevelCompletionDialog from "../components/LevelCompletionDialog";
+import LevelProgressBar from "../components/LevelProgressBar";
 // import { useRewardedAd } from "@/hooks/useRewardedAd";
 
 const GRID_SIZE = 20;
@@ -25,7 +25,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CELL_SIZE = Math.floor(Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) / 25); // Responsive cell size
 const GAME_AREA_SCALE = Math.min(
   SCREEN_WIDTH / (GRID_SIZE * CELL_SIZE),
-  SCREEN_HEIGHT / (GRID_SIZE * CELL_SIZE * 1.4)
+  SCREEN_HEIGHT / (GRID_SIZE * CELL_SIZE * 1.4),
 );
 const INITIAL_SNAKE = [{ x: 5, y: 5 }];
 const DIRECTIONS = {
@@ -70,9 +70,9 @@ const Level2 = () => {
   }>(null);
   const [gameSpeed, setGameSpeed] = useState(230);
   const [canPassWalls, setCanPassWalls] = useState(false);
-  const [powerUpTimeout, setPowerUpTimeout] = useState<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const [powerUpTimeout, setPowerUpTimeout] = useState<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const [activePowers, setActivePowers] = useState<
     {
       type: string;
@@ -88,7 +88,7 @@ const Level2 = () => {
   const [hasGameStarted, setHasGameStarted] = useState(false);
   const [soundEffectsEnabled, setSoundEffectsEnabled] = useState(true);
   const [currentLevel, setCurrentLevel] = useState(2);
-  const POINTS_TO_NEXT_LEVEL = 70;
+  const POINTS_TO_NEXT_LEVEL = 60;
   const [showLevelComplete, setShowLevelComplete] = useState(false);
   const [levelBestScore, setLevelBestScore] = useState(0);
   const [hasShownLevelComplete, setHasShownLevelComplete] = useState(false);
@@ -105,24 +105,22 @@ const Level2 = () => {
     { x: 10, y: 11 },
   ];
 
-    // Helper function to get valid position (avoiding obstacles)
-    const getValidFoodPosition = () => {
-      let position: { x: number; y: number };
-      do {
-        position = {
-          x: Math.floor(Math.random() * GRID_SIZE),
-          y: Math.floor(Math.random() * GRID_SIZE),
-        };
-      } while (
-        OBSTACLES.some(
-          (obstacle) => obstacle.x === position.x && obstacle.y === position.y
-        )
-      );
-      return position;
-    };
-    const [food, setFood] = useState(getValidFoodPosition());
-
-  
+  // Helper function to get valid position (avoiding obstacles)
+  const getValidFoodPosition = () => {
+    let position: { x: number; y: number };
+    do {
+      position = {
+        x: Math.floor(Math.random() * GRID_SIZE),
+        y: Math.floor(Math.random() * GRID_SIZE),
+      };
+    } while (
+      OBSTACLES.some(
+        (obstacle) => obstacle.x === position.x && obstacle.y === position.y,
+      )
+    );
+    return position;
+  };
+  const [food, setFood] = useState(getValidFoodPosition());
 
   const loadSettings = async () => {
     try {
@@ -189,7 +187,7 @@ const Level2 = () => {
               ...power,
               timeLeft: power.timeLeft - 1,
             }))
-            .filter((power) => power.timeLeft > 0)
+            .filter((power) => power.timeLeft > 0),
         );
       }, 1000);
 
@@ -253,7 +251,7 @@ const Level2 = () => {
     }
 
     const hitObstacle = OBSTACLES.some(
-      (obstacle) => head.x === obstacle.x && head.y === obstacle.y
+      (obstacle) => head.x === obstacle.x && head.y === obstacle.y,
     );
     if (hitObstacle && !canPassWalls) {
       setIsGameOver(true);
@@ -481,7 +479,7 @@ const Level2 = () => {
           if (
             (type === "SPEED_UP" || type === "SPEED_DOWN") &&
             !updatedPowers.some(
-              (p) => p.type === "SPEED_UP" || p.type === "SPEED_DOWN"
+              (p) => p.type === "SPEED_UP" || p.type === "SPEED_DOWN",
             )
           ) {
             setGameSpeed(baseSpeed);
@@ -501,7 +499,7 @@ const Level2 = () => {
         prev.map((power) => ({
           ...power,
           pausedAt: Date.now(),
-        }))
+        })),
       );
 
       // Clear existing timeout
@@ -521,7 +519,7 @@ const Level2 = () => {
             };
           }
           return power;
-        })
+        }),
       );
 
       // Recreate timeouts for active powers
@@ -540,7 +538,7 @@ const Level2 = () => {
                 break;
             }
             setActivePowers((prev) =>
-              prev.filter((p) => p.type !== power.type)
+              prev.filter((p) => p.type !== power.type),
             );
           }, power.timeLeft * 1000);
           setPowerUpTimeout(timeoutId);
@@ -563,7 +561,7 @@ const Level2 = () => {
   const loadBestScore = async () => {
     try {
       const bestScore = await AsyncStorage.getItem(
-        `@Level_${currentLevel}_BestScore`
+        `@Level_${currentLevel}_BestScore`,
       );
       if (bestScore) {
         setLevelBestScore(parseInt(bestScore));
@@ -1064,19 +1062,19 @@ const styles = StyleSheet.create({
   powerEmoji: {
     fontSize: SCREEN_WIDTH * 0.04,
     lineHeight: SCREEN_WIDTH * 0.04,
-    textAlign: 'center',
+    textAlign: "center",
   },
   powerTimer: {
     color: theme.primary,
     fontSize: SCREEN_WIDTH * 0.03,
     fontWeight: "bold",
     minWidth: SCREEN_WIDTH * 0.06,
-    textAlign: 'center',
+    textAlign: "center",
   },
   powerUpEmoji: {
     fontSize: SCREEN_WIDTH * 0.04,
     lineHeight: SCREEN_WIDTH * 0.04,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scoreBoostContainer: {
     position: "absolute",

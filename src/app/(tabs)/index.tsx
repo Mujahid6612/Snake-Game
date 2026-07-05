@@ -17,9 +17,9 @@ import {
 
 const TOTAL_LEVELS = 20;
 
-// TEMP: unlock every level for testing. Set back to false to restore
-// normal progression (levels unlock as you complete the previous one).
-const UNLOCK_ALL_FOR_TESTING = true;
+// Levels unlock through normal progression (each unlocks after you complete
+// the previous one). Flip to true to temporarily unlock everything for testing.
+const UNLOCK_ALL_FOR_TESTING = false;
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
