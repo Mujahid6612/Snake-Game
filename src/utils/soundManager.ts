@@ -16,7 +16,7 @@ class SoundManager {
 
   loadBackgroundMusic() {
     try {
-      const player = createAudioPlayer(require("../../assets/background-music.mp3"));
+      const player = createAudioPlayer(require("../../assets/background-music.wav"));
       player.loop = true;
       this.backgroundMusic = player;
     } catch (error) {

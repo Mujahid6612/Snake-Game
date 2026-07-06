@@ -85,111 +85,123 @@ const HelpScreen = () => {
   );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerBadge}>
-          <Ionicons name="help-buoy-outline" size={24} color={theme.background} />
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerBadge}>
+            <Ionicons
+              name="help-buoy-outline"
+              size={24}
+              color={theme.background}
+            />
+          </View>
+          <Text style={styles.headerTitle}>Help</Text>
         </View>
-        <Text style={styles.headerTitle}>Help</Text>
-      </View>
 
-      <BannerAd />
+        <BannerAd />
 
-      <Section icon="game-controller-outline" title="How to play">
-        <Bullet>Swipe up, down, left or right to steer the snake.</Bullet>
-        <Bullet>Eat food to grow longer and earn points.</Bullet>
-        <Bullet>Reach the level&apos;s target score to clear it.</Bullet>
-        <Bullet>
-          Avoid the walls, obstacles, restricted zones and enemy snakes.
-        </Bullet>
-        <Bullet>Tap the screen to pause or resume.</Bullet>
-      </Section>
+        <Section icon="game-controller-outline" title="How to play">
+          <Bullet>Swipe up, down, left or right to steer the snake.</Bullet>
+          <Bullet>Eat food to grow longer and earn points.</Bullet>
+          <Bullet>Reach the level&apos;s target score to clear it.</Bullet>
+          <Bullet>
+            Avoid the walls, obstacles, restricted zones and enemy snakes.
+          </Bullet>
+          <Bullet>Tap the screen to pause or resume.</Bullet>
+        </Section>
 
-      <Section icon="flash-outline" title="Power-ups">
-        <Text style={styles.bodyIntro}>
-          Grab power-ups that appear during play for a temporary edge:
-        </Text>
-        <PowerRow
-          icon="lightning-bolt"
-          name="Speed Boost"
-          desc="Move faster for a short burst."
-        />
-        <PowerRow
-          icon="snail"
-          name="Slow Down"
-          desc="Slow the snake to handle tight spots."
-        />
-        <PowerRow
-          icon="star-four-points"
-          name="Score Boost"
-          desc="Instantly adds bonus points."
-        />
-        <PowerRow
-          icon="wall"
-          name="Wall Pass"
-          desc="Pass through walls for a few seconds."
-        />
-      </Section>
+        <Section icon="flash-outline" title="Power-ups">
+          <Text style={styles.bodyIntro}>
+            Grab power-ups that appear during play for a temporary edge:
+          </Text>
+          <PowerRow
+            icon="lightning-bolt"
+            name="Speed Boost"
+            desc="Move faster for a short burst."
+          />
+          <PowerRow
+            icon="snail"
+            name="Slow Down"
+            desc="Slow the snake to handle tight spots."
+          />
+          <PowerRow
+            icon="star-four-points"
+            name="Score Boost"
+            desc="Instantly adds bonus points."
+          />
+          <PowerRow
+            icon="wall"
+            name="Wall Pass"
+            desc="Pass through walls for a few seconds."
+          />
+        </Section>
 
-      <Section icon="trophy-outline" title="Levels & progress">
-        <Bullet>20 hand-crafted levels, each tougher than the last.</Bullet>
-        <Bullet>
-          New hazards appear as you go: moving obstacles, teleporters,
-          restricted zones and rival snakes.
-        </Bullet>
-        <Bullet>Every level has a target score to reach.</Bullet>
-        <Bullet>Replay any level to beat your best score.</Bullet>
-      </Section>
+        <Section icon="trophy-outline" title="Levels & progress">
+          <Bullet>20 hand-crafted levels, each tougher than the last.</Bullet>
+          <Bullet>
+            New hazards appear as you go: moving obstacles, teleporters,
+            restricted zones and rival snakes.
+          </Bullet>
+          <Bullet>Every level has a target score to reach.</Bullet>
+          <Bullet>Replay any level to beat your best score.</Bullet>
+        </Section>
 
-      <Section icon="settings-outline" title="Settings">
-        <Bullet>Difficulty sets the snake&apos;s base speed.</Bullet>
-        <Bullet>Toggle sound effects and background music.</Bullet>
-        <Bullet>Your preferences are saved automatically.</Bullet>
-      </Section>
+        <Section icon="settings-outline" title="Settings">
+          <Bullet>Difficulty sets the snake&apos;s base speed.</Bullet>
+          <Bullet>Toggle sound effects and background music.</Bullet>
+          <Bullet>Your preferences are saved automatically.</Bullet>
+        </Section>
 
-      <Section icon="information-circle-outline" title="About">
-        <Text style={styles.bodyText}>
-          Classic Snake is a modern take on the arcade classic — 20 levels of
-          power-ups and escalating hazards.{"\n\n"}Built with React Native and
-          Expo.{"\n"}Version 1.0.0 · © 2026 Classic Snake.
-        </Text>
-      </Section>
+        <Section icon="information-circle-outline" title="About">
+          <Text style={styles.bodyText}>
+            Classic Snake is a modern take on the arcade classic — 20 levels of
+            power-ups and escalating hazards.{"\n\n"}Built with React Native and
+            Expo.{"\n"}Version 1.0.0 · © 2026 Classic Snake.
+          </Text>
+        </Section>
 
-      <Section icon="mail-outline" title="Contact">
-        <Text style={styles.bodyText}>
-          Questions or feedback? We&apos;d love to hear from you.
-        </Text>
-        <TouchableOpacity
-          style={styles.contactButton}
-          onPress={() => Linking.openURL("mailto:techtool269@gmail.com")}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="mail-outline" size={18} color={theme.background} />
-          <Text style={styles.contactButtonText}>Contact support</Text>
-        </TouchableOpacity>
-      </Section>
+        <Section icon="mail-outline" title="Contact">
+          <Text style={styles.bodyText}>
+            Questions or feedback? We&apos;d love to hear from you.
+          </Text>
+          <TouchableOpacity
+            style={styles.contactButton}
+            onPress={() => Linking.openURL("mailto:techtool269@gmail.com")}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="mail-outline" size={18} color={theme.background} />
+            <Text style={styles.contactButtonText}>Contact support</Text>
+          </TouchableOpacity>
+        </Section>
 
-      <Section icon="shield-checkmark-outline" title="Privacy & terms">
-        <Bullet>We don&apos;t collect any personal data.</Bullet>
-        <Bullet>Your progress is stored locally on your device.</Bullet>
-        <Bullet>You should be 13 or older to play.</Bullet>
-        <Bullet>
-          The game is provided &quot;as is&quot; and may be updated over time.
-        </Bullet>
-      </Section>
-    </ScrollView>
+        <Section icon="shield-checkmark-outline" title="Privacy & terms">
+          <Bullet>Your progress and settings are stored only on your device.</Bullet>
+          <Bullet>
+            We show ads via Google AdMob, which may collect device identifiers
+            (such as the advertising ID) to serve and measure ads.
+          </Bullet>
+          <Bullet>You should be 13 or older to play.</Bullet>
+          <Bullet>
+            The game is provided &quot;as is&quot; and may be updated over time.
+          </Bullet>
+        </Section>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: theme.background,
+  },
+  container: {
+    flex: 1,
   },
   contentContainer: {
     padding: 20,

@@ -19,7 +19,7 @@ const GameCompletionModal = ({ visible, onClose, finalScore, onRestart }: GameCo
   useEffect(() => {
     function playSound() {
       try {
-        const player = createAudioPlayer(require("../../assets/level-up.mp3"));
+        const player = createAudioPlayer(require("../../assets/level-up.wav"));
         player.play();
       } catch (error) {
         console.error("Error playing sound:", error);

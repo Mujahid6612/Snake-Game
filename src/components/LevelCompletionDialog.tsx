@@ -28,7 +28,7 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
   useEffect(() => {
     function playSound() {
       try {
-        const player = createAudioPlayer(require("../../assets/level-up.mp3"));
+        const player = createAudioPlayer(require("../../assets/level-up.wav"));
         player.play();
       } catch (error) {
         console.error("Error playing sound:", error);
@@ -43,7 +43,6 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
   const handleContinue = async () => {
     await AsyncStorage.setItem(`@Level_${level + 1}_Unlocked`, "true");
     await AsyncStorage.setItem(`@Level_${level}_BestScore`, score.toString());
-    // Show interstitial ad on game over
     await showAd();
     onContinue();
   };
@@ -51,6 +50,7 @@ const LevelCompletionDialog: React.FC<LevelCompletionDialogProps> = ({
   const handleNextLevel = async () => {
     await AsyncStorage.setItem(`@Level_${level + 1}_Unlocked`, "true");
     await AsyncStorage.setItem(`@Level_${level}_BestScore`, score.toString());
+    await showAd();
     onNextLevel?.();
   };
 

@@ -25,6 +25,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     backgroundColor: theme.background,
-    paddingVertical: 5,
+    // Extra breathing room so the ad isn't flush against tappable content
+    // (AdMob discourages banners adjacent to interactive elements).
+    paddingVertical: 10,
   },
 }); 

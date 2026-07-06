@@ -41,13 +41,13 @@ const SettingsScreen = () => {
   const loadSettings = async () => {
     try {
       const storedDifficulty = await AsyncStorage.getItem(
-        STORAGE_KEYS.DIFFICULTY
+        STORAGE_KEYS.DIFFICULTY,
       );
       const storedSoundEffects = await AsyncStorage.getItem(
-        STORAGE_KEYS.SOUND_EFFECTS
+        STORAGE_KEYS.SOUND_EFFECTS,
       );
       const storedBackgroundMusic = await AsyncStorage.getItem(
-        STORAGE_KEYS.BACKGROUND_MUSIC
+        STORAGE_KEYS.BACKGROUND_MUSIC,
       );
 
       if (storedDifficulty) {
@@ -93,7 +93,7 @@ const SettingsScreen = () => {
     try {
       await AsyncStorage.setItem(
         STORAGE_KEYS.BACKGROUND_MUSIC,
-        value.toString()
+        value.toString(),
       );
       setBackgroundMusic(value);
       const soundManager = SoundManager.getInstance();
@@ -108,120 +108,146 @@ const SettingsScreen = () => {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerBadge}>
-          <Ionicons name="settings-outline" size={24} color={theme.background} />
-        </View>
-        <Text style={styles.headerTitle}>Settings</Text>
-      </View>
-
-      <BannerAd />
-
-      {/* Difficulty */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={styles.cardIcon}>
-            <Ionicons name="speedometer-outline" size={20} color={theme.primary} />
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerBadge}>
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={theme.background}
+            />
           </View>
-          <Text style={styles.cardTitle}>Difficulty</Text>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
 
-        <View style={styles.segment}>
-          {DIFFICULTIES.map((level) => {
-            const active = difficulty === level;
-            return (
-              <TouchableOpacity
-                key={level}
-                style={[styles.segmentItem, active && styles.segmentItemActive]}
-                onPress={() => saveDifficulty(level)}
-                activeOpacity={0.85}
-              >
-                <Text
+        <BannerAd />
+
+        {/* Difficulty */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardIcon}>
+              <Ionicons
+                name="speedometer-outline"
+                size={20}
+                color={theme.primary}
+              />
+            </View>
+            <Text style={styles.cardTitle}>Difficulty</Text>
+          </View>
+
+          <View style={styles.segment}>
+            {DIFFICULTIES.map((level) => {
+              const active = difficulty === level;
+              return (
+                <TouchableOpacity
+                  key={level}
                   style={[
-                    styles.segmentText,
-                    active && styles.segmentTextActive,
+                    styles.segmentItem,
+                    active && styles.segmentItemActive,
                   ]}
+                  onPress={() => saveDifficulty(level)}
+                  activeOpacity={0.85}
                 >
-                  {level.charAt(0) + level.slice(1).toLowerCase()}
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      active && styles.segmentTextActive,
+                    ]}
+                  >
+                    {level.charAt(0) + level.slice(1).toLowerCase()}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={styles.cardDescription}>
+            Controls the snake&apos;s speed — Easy is normal, Medium is 50%
+            faster, Hard is 100% faster.
+          </Text>
+        </View>
+
+        {/* Sound effects */}
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleLeft}>
+              <View style={styles.cardIcon}>
+                <Ionicons
+                  name="volume-high-outline"
+                  size={20}
+                  color={theme.primary}
+                />
+              </View>
+              <View style={styles.toggleTextWrap}>
+                <Text style={styles.cardTitle}>Sound Effects</Text>
+                <Text style={styles.cardSubtitle}>
+                  Eat, game over & power-ups
                 </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <Text style={styles.cardDescription}>
-          Controls the snake&apos;s speed — Easy is normal, Medium is 50%
-          faster, Hard is 100% faster.
-        </Text>
-      </View>
-
-      {/* Sound effects */}
-      <View style={styles.card}>
-        <View style={styles.toggleRow}>
-          <View style={styles.toggleLeft}>
-            <View style={styles.cardIcon}>
-              <Ionicons name="volume-high-outline" size={20} color={theme.primary} />
+              </View>
             </View>
-            <View style={styles.toggleTextWrap}>
-              <Text style={styles.cardTitle}>Sound Effects</Text>
-              <Text style={styles.cardSubtitle}>Eat, game over & power-ups</Text>
-            </View>
+            <Switch
+              value={soundEffects}
+              onValueChange={saveSoundEffects}
+              trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
+              thumbColor={soundEffects ? theme.white : theme.switchThumbOff}
+            />
           </View>
-          <Switch
-            value={soundEffects}
-            onValueChange={saveSoundEffects}
-            trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
-            thumbColor={soundEffects ? theme.white : theme.switchThumbOff}
-          />
         </View>
-      </View>
 
-      {/* Background music */}
-      <View style={styles.card}>
-        <View style={styles.toggleRow}>
-          <View style={styles.toggleLeft}>
-            <View style={styles.cardIcon}>
-              <Ionicons name="musical-notes-outline" size={20} color={theme.primary} />
+        {/* Background music */}
+        <View style={styles.card}>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleLeft}>
+              <View style={styles.cardIcon}>
+                <Ionicons
+                  name="musical-notes-outline"
+                  size={20}
+                  color={theme.primary}
+                />
+              </View>
+              <View style={styles.toggleTextWrap}>
+                <Text style={styles.cardTitle}>Background Music</Text>
+                <Text style={styles.cardSubtitle}>
+                  Plays while you navigate
+                </Text>
+              </View>
             </View>
-            <View style={styles.toggleTextWrap}>
-              <Text style={styles.cardTitle}>Background Music</Text>
-              <Text style={styles.cardSubtitle}>Plays while you navigate</Text>
-            </View>
+            <Switch
+              value={backgroundMusic}
+              onValueChange={saveBackgroundMusic}
+              trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
+              thumbColor={backgroundMusic ? theme.white : theme.switchThumbOff}
+            />
           </View>
-          <Switch
-            value={backgroundMusic}
-            onValueChange={saveBackgroundMusic}
-            trackColor={{ false: theme.switchTrackOff, true: theme.primary }}
-            thumbColor={backgroundMusic ? theme.white : theme.switchThumbOff}
-          />
         </View>
-      </View>
 
-      {/* Info */}
-      <View style={styles.infoContainer}>
-        <Ionicons
-          name="information-circle-outline"
-          size={20}
-          color={theme.primary}
-        />
-        <Text style={styles.infoText}>
-          Settings apply to your next game.
-        </Text>
-      </View>
-    </ScrollView>
+        {/* Info */}
+        <View style={styles.infoContainer}>
+          <Ionicons
+            name="information-circle-outline"
+            size={20}
+            color={theme.primary}
+          />
+          <Text style={styles.infoText}>Settings apply to your next game.</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: theme.background,
+  },
+  container: {
+    flex: 1,
   },
   contentContainer: {
     padding: 20,
