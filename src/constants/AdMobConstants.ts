@@ -37,14 +37,17 @@ const PROD_IDS = {
     default: 'ca-app-pub-8764706450036193/5462187577',
   }),
   APP_OPEN: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/5662855259', // this is not a valid id for ios
-    android: 'ca-app-pub-5435238274943994/1107712894',
-    default: 'ca-app-pub-5435238274943994/1107712894',
+    ios: 'ca-app-pub-3940256099942544/5662855259', // TODO: replace with real iOS app-open unit when shipping iOS
+    android: 'ca-app-pub-8764706450036193/9929603128',
+    default: 'ca-app-pub-8764706450036193/9929603128',
   }),
+  // NOTE: Rewarded ads are not used in the app. These are left as sample IDs
+  // and should not be relied on until a rewarded unit is created on the
+  // ca-app-pub-8764706450036193 account.
   REWARDED: Platform.select({
-    ios: 'ca-app-pub-3940256099942544/1712485313',  // This is not a valid id for ios
-    android: 'ca-app-pub-5435238274943994/9811041877',
-    default: 'ca-app-pub-5435238274943994/9811041877',
+    ios: 'ca-app-pub-3940256099942544/1712485313',
+    android: 'ca-app-pub-3940256099942544/5224354917',
+    default: 'ca-app-pub-3940256099942544/5224354917',
   }),
 };
 

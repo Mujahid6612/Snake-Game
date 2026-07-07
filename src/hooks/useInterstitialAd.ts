@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS } from '@/constants/AdMobConstants';
+import { markAdClosed, markAdOpened } from '@/utils/adState';
 
 export const useInterstitialAd = () => {
   const [interstitialAd, setInterstitialAd] = useState<InterstitialAd | null>(null);
@@ -32,6 +33,7 @@ export const useInterstitialAd = () => {
     });
 
     ad.addAdEventListener(AdEventType.CLOSED, () => {
+      markAdClosed();
       setIsAdLoaded(false);
       loadAd(); // Load the next ad
     });
@@ -41,6 +43,7 @@ export const useInterstitialAd = () => {
 
   const showAd = async () => {
     if (isAdLoaded && interstitialAd) {
+      markAdOpened();
       await interstitialAd.show();
     }
   };

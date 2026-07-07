@@ -1,47 +1,105 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { AppOpenAd, AdEventType } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS } from '@/constants/AdMobConstants';
+import { adState, markAdClosed, markAdOpened } from '@/utils/adState';
 
+// App Open ads expire ~4 hours after loading. After that they must be
+// reloaded before showing, or the impression is wasted.
+const AD_EXPIRY_MS = 4 * 60 * 60 * 1000;
+
+// Cool-down after another full-screen ad closes, so we don't stack an
+// App Open ad on top of an interstitial that just finished.
+const AD_COOLDOWN_MS = 3000;
+
+/**
+ * Self-contained App Open ad manager. Call once, high in the tree (e.g. the
+ * root layout). It loads an ad on mount and shows it whenever the app returns
+ * to the foreground — as long as no other full-screen ad just played.
+ *
+ * By design it does NOT show on the very first cold start (the app is already
+ * "active" at mount, and showing an ad over the splash screen is jarring and
+ * can trip AdMob policy). It shows on the next foreground and onward.
+ */
 export const useAppOpenAd = () => {
-  const [appOpenAd, setAppOpenAd] = useState<AppOpenAd | null>(null);
+  const adRef = useRef<AppOpenAd | null>(null);
+  const isLoadedRef = useRef(false);
+  const loadTimeRef = useRef(0);
+  const appState = useRef<AppStateStatus>(AppState.currentState);
 
-  useEffect(() => {
-    const loadAppOpenAd = async () => {
-      const ad = AppOpenAd.createForAdRequest(AD_UNIT_IDS.APP_OPEN, {
-        requestNonPersonalizedAdsOnly: true,
-        keywords: ['game', 'snake', 'arcade'],
-      });
+  const isAdAvailable = () =>
+    isLoadedRef.current &&
+    adRef.current != null &&
+    Date.now() - loadTimeRef.current < AD_EXPIRY_MS;
 
-      ad.addAdEventListener(AdEventType.LOADED, () => {
-        setAppOpenAd(ad);
-      });
+  const loadAd = () => {
+    const ad = AppOpenAd.createForAdRequest(AD_UNIT_IDS.APP_OPEN, {
+      requestNonPersonalizedAdsOnly: true,
+      keywords: ['game', 'snake', 'arcade'],
+    });
 
-      ad.addAdEventListener(AdEventType.ERROR, (error) => {
-        console.log('App Open Ad error:', error);
-      });
+    ad.addAdEventListener(AdEventType.LOADED, () => {
+      isLoadedRef.current = true;
+      loadTimeRef.current = Date.now();
+      adRef.current = ad;
+    });
 
-      await ad.load();
-    };
+    ad.addAdEventListener(AdEventType.ERROR, (error) => {
+      console.log('[AppOpenAd] load error:', error);
+      isLoadedRef.current = false;
+    });
 
-    loadAppOpenAd();
+    ad.addAdEventListener(AdEventType.CLOSED, () => {
+      markAdClosed();
+      isLoadedRef.current = false;
+      adRef.current = null;
+      ad.removeAllListeners();
+      loadAd(); // preload the next one
+    });
 
-    return () => {
-      if (appOpenAd) {
-        appOpenAd.removeAllListeners();
-        setAppOpenAd(null);
-      }
-    };
-  }, []);
+    ad.load();
+  };
 
-  const showAppOpenAd = async () => {
+  const showAdIfAvailable = async () => {
+    // Don't stack on another full-screen ad, and honor the cool-down.
+    if (adState.isShowingFullScreenAd) return;
+    if (Date.now() - adState.lastAdClosedAt < AD_COOLDOWN_MS) return;
+
+    if (!isAdAvailable()) {
+      if (!isLoadedRef.current) loadAd();
+      return;
+    }
+
     try {
-      if (appOpenAd) {
-        await appOpenAd.show();
-      }
+      markAdOpened();
+      await adRef.current!.show();
     } catch (error) {
-      console.log('Error showing app open ad:', error);
+      console.log('[AppOpenAd] show error:', error);
+      markAdClosed();
+      isLoadedRef.current = false;
+      loadAd();
     }
   };
 
-  return { showAppOpenAd };
-}; 
+  useEffect(() => {
+    loadAd();
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const cameToForeground =
+        appState.current.match(/inactive|background/) && nextState === 'active';
+      if (cameToForeground) {
+        showAdIfAvailable();
+      }
+      appState.current = nextState;
+    });
+
+    return () => {
+      subscription.remove();
+      adRef.current?.removeAllListeners();
+      adRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { showAdIfAvailable };
+};

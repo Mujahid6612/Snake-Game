@@ -1,8 +1,9 @@
 import { BannerAd } from "@/components/BannerAd";
 import { theme } from "@/constants/theme";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Linking,
   ScrollView,
   StyleSheet,
@@ -10,12 +11,57 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  AdsConsent,
+  AdsConsentPrivacyOptionsRequirementStatus,
+} from "react-native-google-mobile-ads";
+
+// Public URL of the hosted privacy policy. Play requires a live, publicly
+// accessible URL (not localhost / not behind auth).
+const PRIVACY_POLICY_URL =
+  "https://classic-snake-six.vercel.app/privacy-policy";
 
 type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 type MciName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
 const HelpScreen = () => {
   const [expanded, setExpanded] = useState<string | null>("How to play");
+
+  // AdMob/GDPR: users must be able to change their consent choice at any time.
+  // We only surface the "Manage ad privacy choices" entry point when Google's
+  // UMP says a privacy options form is required for this user (i.e. EEA/UK/CH).
+  const [canManageConsent, setCanManageConsent] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const info = await AdsConsent.getConsentInfo();
+        if (mounted) {
+          setCanManageConsent(
+            info.privacyOptionsRequirementStatus ===
+              AdsConsentPrivacyOptionsRequirementStatus.REQUIRED
+          );
+        }
+      } catch {
+        // No consent info yet / not applicable — leave the button hidden.
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleManageConsent = async () => {
+    try {
+      await AdsConsent.showPrivacyOptionsForm();
+    } catch {
+      Alert.alert(
+        "Unavailable",
+        "Ad privacy options aren't available right now. Please try again later."
+      );
+    }
+  };
 
   const toggle = (section: string) =>
     setExpanded((prev) => (prev === section ? null : section));
@@ -189,6 +235,32 @@ const HelpScreen = () => {
           <Bullet>
             The game is provided &quot;as is&quot; and may be updated over time.
           </Bullet>
+
+          <TouchableOpacity
+            style={styles.privacyButton}
+            onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+            activeOpacity={0.85}
+          >
+            <Ionicons
+              name="document-text-outline"
+              size={18}
+              color={theme.primary}
+            />
+            <Text style={styles.privacyButtonText}>View Privacy Policy</Text>
+          </TouchableOpacity>
+
+          {canManageConsent && (
+            <TouchableOpacity
+              style={styles.privacyButton}
+              onPress={handleManageConsent}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="options-outline" size={18} color={theme.primary} />
+              <Text style={styles.privacyButtonText}>
+                Manage ad privacy choices
+              </Text>
+            </TouchableOpacity>
+          )}
         </Section>
       </ScrollView>
     </View>
@@ -325,6 +397,23 @@ const styles = StyleSheet.create({
     color: theme.background,
     fontSize: 15,
     fontWeight: "800",
+  },
+  privacyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: theme.surface,
+    borderWidth: 1,
+    borderColor: theme.whiteA10,
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginTop: 14,
+  },
+  privacyButtonText: {
+    color: theme.primary,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });
 
