@@ -1,23 +1,23 @@
+import { useAppOpenAd } from "@/hooks/useAppOpenAd";
 import { useFonts } from "expo-font";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import "react-native-reanimated";
 import mobileAds, {
-  MobileAds,
   AdsConsent,
   MaxAdContentRating,
+  MobileAds,
 } from "react-native-google-mobile-ads";
-import { useAppOpenAd } from "@/hooks/useAppOpenAd";
+import "react-native-reanimated";
 
+import { STORAGE_KEYS } from "@/app/(tabs)/settings";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import SoundManager from "@/utils/soundManager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AppState, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import SoundManager from "@/utils/soundManager";
-import { STORAGE_KEYS } from "@/app/(tabs)/settings";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -77,7 +77,7 @@ export default function RootLayout() {
   // prints in logcat ("setTestDeviceIds(Arrays.asList("XXXX"))"). Add it below.
   useEffect(() => {
     const TEST_DEVICE_IDS: string[] = [
-      // "33BE2250B43518CCDA7DE426D04EE231", // <- replace with your device ID from logcat
+      "1237F3CC0A3D50ADE6CB2B410B539318", // <- My device ID for ad testing
     ];
 
     const initializeAds = async () => {
@@ -122,7 +122,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="game-levels" options={{ headerShown: false }} />
