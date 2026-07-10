@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { InterstitialAd, AdEventType } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS } from '@/constants/AdMobConstants';
-import { markAdClosed, markAdOpened } from '@/utils/adState';
+import { canShowFullScreenAd, markAdClosed, markAdOpened } from '@/utils/adState';
 
 export const useInterstitialAd = () => {
   const [interstitialAd, setInterstitialAd] = useState<InterstitialAd | null>(null);
@@ -42,7 +42,10 @@ export const useInterstitialAd = () => {
   };
 
   const showAd = async () => {
-    if (isAdLoaded && interstitialAd) {
+    // Honor the shared frequency cap. When capped we simply skip showing (the
+    // loaded ad is kept for next time) so the caller's flow — resuming the game
+    // or advancing to the next level — continues uninterrupted.
+    if (isAdLoaded && interstitialAd && canShowFullScreenAd()) {
       markAdOpened();
       await interstitialAd.show();
     }

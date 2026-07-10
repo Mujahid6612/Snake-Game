@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1024px; height: 500px; overflow: hidden; }
+  .banner {
+    position: relative;
+    width: 1024px;
+    height: 500px;
+    background:
+      radial-gradient(circle at 78% 30%, rgba(82,183,136,0.25), transparent 55%),
+      linear-gradient(135deg, #0b0f0d 0%, #101a15 55%, #0b0f0d 100%);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+  /* faint grid */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(82,183,136,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(82,183,136,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .content {
+    position: absolute;
+    left: 64px; top: 0; bottom: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    z-index: 3;
+  }
+  .kicker {
+    color: #52B788; font-size: 22px; font-weight: 700; letter-spacing: 4px;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .title {
+    color: #ffffff; font-size: 92px; font-weight: 800; line-height: 0.95;
+    letter-spacing: -1px; text-shadow: 0 4px 30px rgba(82,183,136,0.35);
+  }
+  .title .accent { color: #52B788; }
+  .tagline {
+    color: #b8c4bd; font-size: 26px; font-weight: 500; margin-top: 20px;
+  }
+  .tagline b { color: #eafff4; font-weight: 700; }
+
+  /* snake board on the right */
+  .board { position: absolute; left: 650px; top: 140px; width: 300px; height: 240px; z-index: 2; }
+  .seg {
+    position: absolute; width: 42px; height: 42px; border-radius: 10px;
+    background: linear-gradient(135deg, #6fd6a0, #3fa876);
+    box-shadow: 0 0 16px rgba(82,183,136,0.45);
+  }
+  .head {
+    background: linear-gradient(135deg, #8ff0bb, #52B788);
+    box-shadow: 0 0 22px rgba(82,183,136,0.7);
+  }
+  .eye { position: absolute; width: 8px; height: 8px; border-radius: 50%; background:#0b0f0d; top: 10px; }
+  .apple {
+    position: absolute; width: 40px; height: 40px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a8a, #e63e3e);
+    box-shadow: 0 0 20px rgba(230,62,62,0.55);
+  }
+  .apple::after {
+    content:''; position:absolute; top:-8px; left:18px; width:6px; height:12px;
+    background:#3fa876; border-radius:3px; transform: rotate(20deg);
+  }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <div class="grid"></div>
+
+    <div class="content">
+      <div class="kicker">Retro Arcade</div>
+      <div class="title">Classic<br><span class="accent">Snake</span></div>
+      <div class="tagline"><b>20 levels</b> · power-ups · teleporters · <b>offline</b></div>
+    </div>
+
+    <div class="board">
+      <!-- tail -> head trail -->
+      <div class="seg" style="left:0px;   top:150px;"></div>
+      <div class="seg" style="left:52px;  top:150px;"></div>
+      <div class="seg" style="left:104px; top:150px;"></div>
+      <div class="seg" style="left:104px; top:98px;"></div>
+      <div class="seg" style="left:104px; top:46px;"></div>
+      <div class="seg" style="left:156px; top:46px;"></div>
+      <div class="seg head" style="left:208px; top:46px;">
+        <div class="eye" style="left:9px;"></div>
+        <div class="eye" style="left:25px;"></div>
+      </div>
+      <div class="apple" style="left:214px; top:150px;"></div>
+    </div>
+  </div>
+</body>
+</html>

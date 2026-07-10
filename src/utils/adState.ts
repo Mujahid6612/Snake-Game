@@ -15,6 +15,22 @@ export const adState = {
   lastAdClosedAt: 0,
 };
 
+// Minimum gap between two full-screen ads (interstitial OR app-open),
+// measured from when the previous one was dismissed. Interstitials fire on
+// every game-over/level transition and the app-open ad fires on every
+// foreground return; without a shared cap a user could see several
+// full-screen ads within seconds. That aggregate pattern is exactly what
+// Google Play's disruptive-ads / "too many ads" enforcement targets, so both
+// hooks gate on the single guard below.
+const MIN_FULL_SCREEN_AD_INTERVAL_MS = 60 * 1000;
+
+// Whether it's currently allowed to show a full-screen ad: none on screen,
+// and enough time has passed since the last one closed.
+export const canShowFullScreenAd = () => {
+  if (adState.isShowingFullScreenAd) return false;
+  return Date.now() - adState.lastAdClosedAt >= MIN_FULL_SCREEN_AD_INTERVAL_MS;
+};
+
 // Call when a full-screen ad becomes visible.
 export const markAdOpened = () => {
   adState.isShowingFullScreenAd = true;

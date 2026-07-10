@@ -1,3 +1,4 @@
+import { BannerAd } from "@/components/BannerAd";
 import { theme } from "@/constants/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,7 +13,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BannerAd } from "@/components/BannerAd";
 // import Intro from "@/components/intro";
 // import SoundManager from "@/utils/soundManager";
 

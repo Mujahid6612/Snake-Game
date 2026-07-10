@@ -2,15 +2,11 @@ import { useEffect, useRef } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { AppOpenAd, AdEventType } from 'react-native-google-mobile-ads';
 import { AD_UNIT_IDS } from '@/constants/AdMobConstants';
-import { adState, markAdClosed, markAdOpened } from '@/utils/adState';
+import { canShowFullScreenAd, markAdClosed, markAdOpened } from '@/utils/adState';
 
 // App Open ads expire ~4 hours after loading. After that they must be
 // reloaded before showing, or the impression is wasted.
 const AD_EXPIRY_MS = 4 * 60 * 60 * 1000;
-
-// Cool-down after another full-screen ad closes, so we don't stack an
-// App Open ad on top of an interstitial that just finished.
-const AD_COOLDOWN_MS = 3000;
 
 /**
  * Self-contained App Open ad manager. Call once, high in the tree (e.g. the
@@ -61,9 +57,10 @@ export const useAppOpenAd = () => {
   };
 
   const showAdIfAvailable = async () => {
-    // Don't stack on another full-screen ad, and honor the cool-down.
-    if (adState.isShowingFullScreenAd) return;
-    if (Date.now() - adState.lastAdClosedAt < AD_COOLDOWN_MS) return;
+    // Honor the shared frequency cap: don't stack on another full-screen ad
+    // (e.g. an interstitial that just closed) or show one too soon after the
+    // last. See canShowFullScreenAd() in adState.
+    if (!canShowFullScreenAd()) return;
 
     if (!isAdAvailable()) {
       if (!isLoadedRef.current) loadAd();
